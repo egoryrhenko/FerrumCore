@@ -1,0 +1,100 @@
+# Настройки FerrumCore
+# нет неверьте Настройки BloomyCore
+
+
+limited_action: В вашем аккаунте есть ограничение на это действие :(
+attack_limited_player: Не нападайте на людей с ограничением на пвп
+
+break_spawn_container: В целях безопасности, новичкам запрещено ломать блоки контейнеры на спавне
+
+size_cooldown: 5000
+
+Danger_blocks:
+  - "FIRE"
+  - "TNT"
+  - "WITHER_SKELETON_WALL_SKULL"
+  - "WITHER_SKELETON_SKULL"
+  - "RESPAWN_ANCHOR"
+Danger_entity:
+  - "TNT_MINECART"
+  - "END_CRYSTAL"
+
+
+DonateItems:
+  note:
+    Name: "Суффикс &d♬"
+    Content: "#fc21a5♬"
+    Permission: "suffix.note"
+    Material: "NOTE_BLOCK"
+
+  skull:
+    Name: "Суффикс &7☠"
+    Content: "#aaaaaa☠"
+    Permission: "suffix.skeleton_skull"
+    Material: "SKELETON_SKULL"
+
+  fire:
+    Name: "Суффикс &6🔥"
+    Content: "&6🔥"
+    Permission: "suffix.fire"
+    Material: "BLAZE_POWDER"
+
+  cloud:
+    Name: "Суффикс &7☁"
+    Content: "&7☁"
+    Permission: "suffix.cloud"
+    Material: "GRAY_DYE"
+
+  heart:
+    Name: "Суффикс &d❤"
+    Content: "#eb7ab2❤"
+    Permission: "suffix.heart"
+    Material: "REDSTONE"
+
+  trident:
+    Name: "Суффикс &2🔱"
+    Content: "#2ac089🔱"
+    Permission: "suffix.trident"
+    Material: "TRIDENT"
+
+  meteor:
+    Name: "Суффикс &6☄"
+    Content: "#f58751☄"
+    Permission: "suffix.meteor"
+    Material: "MAGMA_BLOCK"
+
+  snowman:
+    Name: "Суффикс &f☃"
+    Content: "#7af4fa☃"
+    Permission: "suffix.snow_golem"
+    Material: "SNOW_BLOCK"
+
+  sun:
+    Name: "Суффикс &e☀"
+    Content: "#fcc623☀"
+    Permission: "suffix.sun"
+    Material: "SUNFLOWER"
+
+  moon:
+    Name: "Суффикс &b☽"
+    Content: "#97E5FF☽"
+    Permission: "suffix.moon"
+    Material: "END_STONE"
+
+  umbrella:
+    Name: "Суффикс &5☔"
+    Content: "#9056f5☔"
+    Permission: "suffix.umbrella"
+    Material: "BLUE_DYE"
+
+  sea:
+    Name: "Суффикс &b🌊"
+    Content: "#738df5🌊"
+    Permission: "suffix.see"
+    Material: "WATER_BUCKET"
+
+  toilet:
+    Name: "Суффикс &f🚽"
+    Content: "🚽"
+    Permission: "suffix.toilet"
+    Material: "QUARTZ_STAIRS"

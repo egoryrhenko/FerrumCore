@@ -1,0 +1,100 @@
+name: FerrumCore
+version: '3.0'
+main: org.ferrum.ferrumCore.FerrumCore
+api-version: '1.21'
+softdepend:
+  - LuckPerms
+  - PlaceholderAPI
+  - CoreProtect
+  - PlasmoVoice
+  - DiscordLink
+authors:
+  - Egor_10
+commands:
+  ferrum:
+    description: команда для перезагрузки конфига
+  moder:
+    description: команда для переключения moderMod
+    usage: /moder [on, off]
+  spec:
+    description: команда для переключения режима спектатора
+  rating:
+    description: команда для управления положения игрока в быту
+  playtime:
+    description: команда для просмотра наигроного времени игроком
+    usage: /playtime <nick>
+  render_limit:
+    description: команда для управления прорисовкой игрока
+    usage: /render_limit <value>
+  msg:
+    description: команда для личних сообщений
+    usage: /command <player> <message>
+    aliases:
+      - m
+  reply:
+    description: команда для быстрого ответа
+    usage: /command <message>
+    aliases:
+      - r
+      - асинхронныйпоискмодераторапосинхроногогриферавовремясинхроногопиздеца
+  ignore:
+    description: da
+  alert:
+    description: командя для оповещения групы игроков по пермишену
+  size:
+    description: команда для
+    usage: /scale [size]
+    aliases:
+      - scale
+      - s
+  suffix:
+    description: команда
+  back:
+    description: нету
+  spy:
+    description: ne
+  move_acc:
+    description: da_da
+  delete_acc:
+    description: da_da
+  vote:
+    description: da_da_da
+  rollback:
+    description: da_da_da_da
+  tpworld:
+    description: net
+  portal:
+    description: уникальная фишка с порталами Доктора Стрэнджа
+  charge:
+    description: уникальная фишка спиженая с магички
+  limit:
+    description: да
+  lastseen:
+    aliases:
+      - lastonline
+      - lo
+      - ls
+    description: da_da
+  batcar:
+    description: da_da
+  fly:
+    description: da
+
+permissions:
+  ferrum.restriction:
+    default: false
+  ferrum.block.mace:
+    default: false
+  ferrum.block.shift:
+    default: false
+  ferrum.block.knock:
+    default: false
+  ferrum.promotion.place:
+    default: false
+  ferrum.promotion.lava:
+    default: false
+  ferrum.promotion.summon:
+    default: false
+  ferrum.promotion.fight:
+    default: false
+
