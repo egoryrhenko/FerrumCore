@@ -4,18 +4,24 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.ferrum.ferrumCore.commands.BackCommand;
 import org.ferrum.ferrumCore.moder.ModerManager;
+import org.ferrum.ferrumCore.utils.FerrumListener;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public class ModerCommandListener implements Listener {
+public class ModerCommandListener extends FerrumListener {
 
 
     @EventHandler
     public void onCommandPreprocess(PlayerCommandPreprocessEvent event) {
         Player player = event.getPlayer();
+
+        if (event.getMessage().startsWith("/tp")) {
+            BackCommand.saveLocation(player);
+        }
 
         if (player.hasPermission("ferrum.admin")) return;
 
@@ -44,7 +50,7 @@ public class ModerCommandListener implements Listener {
                     event.setCancelled(true);
                     return;
                 }
-                if (args.length > 2 && !player.hasPermission("ferrum.moder.curator")) {
+                if (!(args.length == 2 || args.length == 4)) {
                     player.sendMessage("нет");
                     event.setCancelled(true);
                 }

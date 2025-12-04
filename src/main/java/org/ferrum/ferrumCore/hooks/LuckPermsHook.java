@@ -22,25 +22,34 @@ import java.util.UUID;
 
 public class LuckPermsHook implements ContextCalculator<Player> {
 
-    private final LuckPerms luckPerms;
+    public static LuckPerms luckPerms;
+    private static boolean isLuckPerms = false;
     private static final Set<EventSubscription<?>> subscriptions = new HashSet<>();
 
     private static final String CONTEXT_MODERMOD = "modermod";
+    public static LuckPermsHook luckPermsHook;
 
     public LuckPermsHook(LuckPerms luckPerms) {
 
-        this.luckPerms = luckPerms;
+        LuckPermsHook.luckPermsHook = this;
+        LuckPermsHook.luckPerms = luckPerms;
 
         subscriptions.add(luckPerms.getEventBus().subscribe(net.luckperms.api.event.node.NodeAddEvent.class, event -> DonateManager.handle(event, event.getNode(), true)));
         subscriptions.add(luckPerms.getEventBus().subscribe(net.luckperms.api.event.node.NodeRemoveEvent.class, event -> DonateManager.handle(event, event.getNode(), false)));
 
         luckPerms.getContextManager().registerCalculator(this);
+        isLuckPerms = true;
 
     }
 
-    public void disable() {
+
+    public static void disable() {
         subscriptions.forEach(net.luckperms.api.event.EventSubscription::close);
-        luckPerms.getContextManager().unregisterCalculator(this);
+        luckPerms.getContextManager().unregisterCalculator(luckPermsHook);
+    }
+
+    public static boolean isLuckPerms() {
+        return isLuckPerms;
     }
 
     @Override

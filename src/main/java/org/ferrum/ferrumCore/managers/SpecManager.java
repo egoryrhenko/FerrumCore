@@ -15,11 +15,13 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.ferrum.ferrumCore.FerrumCore;
 import org.ferrum.ferrumCore.moder.ModerData;
+import org.ferrum.ferrumCore.utils.FerrumListener;
+import org.ferrum.ferrumCore.utils.TeleportUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 
-public class SpecManager implements CommandExecutor, Listener {
+public class SpecManager extends FerrumListener implements CommandExecutor {
 
     public static HashMap<Player, ModerData> SpecData = new HashMap<>();
     @Override
@@ -60,8 +62,8 @@ public class SpecManager implements CommandExecutor, Listener {
     public static void disableSpec(Player player) {
         ModerData moderData = SpecData.get(player);
         SpecData.remove(player);
-        player.teleport(moderData.location);
-        player.getInventory().setContents(moderData.inventory);
+        TeleportUtils.teleport(player, moderData.location());
+        player.getInventory().setContents(moderData.inventory());
         player.setGameMode(GameMode.SURVIVAL);
 
     }

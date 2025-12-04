@@ -5,6 +5,7 @@ import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.Bukkit;
 import org.bukkit.Statistic;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.SpawnCategory;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -17,7 +18,7 @@ import java.util.HashMap;
 
 public class PlaceholderHook extends PlaceholderExpansion implements Listener {
 
-    private final HashMap<String, Integer> playersHours = new HashMap<>();
+    private static final HashMap<String, Integer> playersHours = new HashMap<>();
 
     @Override
     public @NotNull String getIdentifier() {

@@ -13,8 +13,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.inventory.ItemStack;
+import org.ferrum.ferrumCore.utils.FerrumListener;
 
-public class KnockListener implements Listener {
+public class KnockListener extends FerrumListener {
 
     @EventHandler
     public void onBlockKnock(BlockDamageEvent event) {

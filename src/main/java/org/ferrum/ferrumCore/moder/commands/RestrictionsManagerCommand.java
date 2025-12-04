@@ -28,6 +28,10 @@ public class RestrictionsManagerCommand implements CommandExecutor, TabCompleter
         keys.put("limit_knock", "ferrum.block.knock");
         keys.put("limit_mace", "ferrum.block.mace");
         keys.put("limit_shift", "ferrum.block.shift");
+        keys.put("allow-fight", " ferrum.promotion.fight");
+        keys.put("allow-lava", " ferrum.promotion.lava");
+        keys.put("allow-place-danger", " ferrum.promotion.place");
+        keys.put("allow-summon-danger", " ferrum.promotion.summon");
 
         manager = LuckPermsProvider.get().getUserManager();
     }

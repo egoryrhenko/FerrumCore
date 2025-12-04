@@ -20,7 +20,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.ferrum.ferrumCore.FerrumCore;
 import org.ferrum.ferrumCore.chat.util.ChatUtil;
 import org.ferrum.ferrumCore.chat.util.DonatItem;
@@ -30,16 +29,20 @@ import org.jetbrains.annotations.NotNull;
 import java.time.Instant;
 import java.util.*;
 
-public class DonateManager implements Listener, CommandExecutor {
+public class DonateManager implements CommandExecutor {
 
     private final LuckPerms luckPerms;
     public static List<DonatItem> donateItems = new ArrayList<>();
 
-    private final Component title = Component.text("Меню выбора суффикса");
-    private final NamespacedKey key = new NamespacedKey("ferrum", "donat_item_id");
+    private static final Component title = Component.text("Меню выбора суффикса");
+    private static final NamespacedKey key = new NamespacedKey("ferrum", "donat_item_id");
 
     private final ItemStack removeButton;
     private final ItemStack borderItem;
+
+
+    public static Component getTitle() { return title; }
+    public static NamespacedKey getNamespacedKey() { return key; }
 
 
     public DonateManager(LuckPerms luckPerms) {
@@ -55,31 +58,6 @@ public class DonateManager implements Listener, CommandExecutor {
         removeButton.setItemMeta(itemMeta);
     }
 
-    @EventHandler
-    public void onInventoryClick(InventoryClickEvent event) {
-
-        Inventory clickedInventory = event.getClickedInventory();
-
-        if (clickedInventory != null && event.getView().title().equals(title)) {
-            Player player = (Player) event.getWhoClicked();
-
-            event.setCancelled(true);
-
-            ItemStack clickedItem = event.getCurrentItem();
-            if (clickedItem == null || clickedItem.getType() == Material.AIR || clickedItem.getType() == Material.GRAY_STAINED_GLASS_PANE) {
-                return;
-            }
-
-            if (clickedItem.getType() == Material.RED_STAINED_GLASS_PANE) {
-                SuffixData.remove(player);
-                player.closeInventory();
-                return;
-            }
-            SuffixData.set(player, getContent(clickedItem.getPersistentDataContainer().get(key, PersistentDataType.STRING)));
-            player.closeInventory();
-        }
-    }
-
     public void openDonateMenu(Player player) {
         Inventory menu = Bukkit.createInventory(player, 36, title);
 
@@ -93,18 +71,18 @@ public class DonateManager implements Listener, CommandExecutor {
 
         int i = 10;
         for (DonatItem donatItem : donateItems){
-            if (player.hasPermission(donatItem.getPermission())){
+            if (player.hasPermission(donatItem.permission())){
                 if (Objects.equals(menu.getItem(i), borderItem)){
                     i++;
                     continue;
                 }
 
-                ItemStack item = new ItemStack(donatItem.getMaterial());
+                ItemStack item = new ItemStack(donatItem.material());
                 ItemMeta meta = item.getItemMeta();
-                meta.displayName(ChatUtil.formatText(donatItem.getName()).decoration(TextDecoration.ITALIC, false));
-                meta.lore(List.of(ChatUtil.formatText("&7Осталось " +checkPermissionTime(player,donatItem.getPermission())).decoration(TextDecoration.ITALIC, false)));
+                meta.displayName(ChatUtil.formatText(donatItem.name()).decoration(TextDecoration.ITALIC, false));
+                meta.lore(List.of(ChatUtil.formatText("&7Осталось " +checkPermissionTime(player,donatItem.permission())).decoration(TextDecoration.ITALIC, false)));
 
-                meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, donatItem.getId());
+                meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, donatItem.id());
 
                 item.setItemMeta(meta);
                 menu.setItem(i, item);
@@ -147,27 +125,19 @@ public class DonateManager implements Listener, CommandExecutor {
         return "&5∞ &fТиков";
     }
 
-    private static String getContent(String id) {
-        return donateItems.stream()
-                .filter(donatItem -> donatItem.getId().equals(id))
-                .findFirst()
-                .map(DonatItem::getContent)
-                .orElse(null);
-    }
-
     private static String getContentByPerm(String permission) {
         return donateItems.stream()
-                .filter(donatItem -> donatItem.getPermission().equals(permission))
+                .filter(donatItem -> donatItem.permission().equals(permission))
                 .findFirst()
-                .map(DonatItem::getContent)
+                .map(DonatItem::content)
                 .orElse(null);
     }
 
     private static String getPerm(String id) {
         return donateItems.stream()
-                .filter(donatItem -> donatItem.getId().equals(id))
+                .filter(donatItem -> donatItem.id().equals(id))
                 .findFirst()
-                .map(DonatItem::getPermission)
+                .map(DonatItem::permission)
                 .orElse(null);
     }
 

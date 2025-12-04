@@ -24,10 +24,16 @@ public class SuffixData extends Data {
     }
 
     public static String get(OfflinePlayer player) {
-        if (suffixByName.containsKey(player.getName())) {
-            return suffixByName.get(player.getName());
+        try {
+            if (suffixByName.containsKey(player.getName())) {
+                return suffixByName.get(player.getName());
+            }
+            return PlaceholderAPI.setPlaceholders(player, "%luckperms_suffix%");
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return "";
         }
-        return PlaceholderAPI.setPlaceholders(player, "%luckperms_suffix%");
+
     }
 
     public static void remove(OfflinePlayer player) {

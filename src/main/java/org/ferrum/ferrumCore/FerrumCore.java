@@ -2,6 +2,7 @@ package org.ferrum.ferrumCore;
 import net.kyori.adventure.text.Component;
 import net.luckperms.api.LuckPermsProvider;
 import org.bukkit.Bukkit;
+import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.TabCompleter;
@@ -23,28 +24,32 @@ import org.ferrum.ferrumCore.listeners.KnockListener;
 import org.ferrum.ferrumCore.managers.*;
 import org.ferrum.ferrumCore.managers.save.Data;
 import org.ferrum.ferrumCore.moder.ModerManager;
-import org.ferrum.ferrumCore.moder.commands.FlyCommand;
 import org.ferrum.ferrumCore.moder.commands.ModerModCommand;
 import org.ferrum.ferrumCore.moder.commands.RestrictionsManagerCommand;
 import org.ferrum.ferrumCore.moder.listener.AdvancementListener;
 import org.ferrum.ferrumCore.moder.listener.ModerCommandListener;
-import org.ferrum.ferrumCore.portal.PortalManager;
+import org.ferrum.ferrumCore.pricol.portal.PortalManager;
 import org.ferrum.ferrumCore.pricol.BatCarManager;
 import org.ferrum.ferrumCore.pricol.anime.BreakManager;
 import org.ferrum.ferrumCore.pricol.anime.ChargeManager;
+import org.ferrum.ferrumCore.pricol.anime.InfinityVoid;
+import org.ferrum.ferrumCore.utils.FerrumCommand;
+import org.ferrum.ferrumCore.utils.FerrumListener;
+import org.ferrum.ferrumCore.utils.Scheduler;
 import org.ferrum.ferrumCore.utils.TabCompleterUtil;
+import org.reflections.Reflections;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Set;
 import java.util.logging.Logger;
 
 public final class FerrumCore extends JavaPlugin {
     public static FerrumCore plugin;
     private static Logger logger;
-
-    LuckPermsHook luckPermsHook;
 
     @Override
     public void onEnable() {
@@ -61,125 +66,115 @@ public final class FerrumCore extends JavaPlugin {
         Data.init();
 
         TabCompleterUtil.LoadNicks();
-        RegisterListener(new TabCompleterUtil());
+
+        registerAllCommands();
+        registerAllListeners();
 
         if (Bukkit.getPluginManager().getPlugin("LuckPerms") != null) {
-            luckPermsHook = new LuckPermsHook(LuckPermsProvider.get());
+            new LuckPermsHook(LuckPermsProvider.get());
 
             //DONATE MANAGER
 
             DonateManager donateManager = new DonateManager(LuckPermsProvider.get());
-            RegisterListener(donateManager);
-            RegisterCommand("suffix", donateManager, null, null);
+            registerCommand("suffix", donateManager, null, null);
 
             //Limit MANAGER
 
             RestrictionsManagerCommand managerCommand = new RestrictionsManagerCommand();
-            RegisterCommand("limit", managerCommand, managerCommand, "ferrum.command.limit");
+            registerCommand("limit", managerCommand, managerCommand, "ferrum.command.limit");
         }
 
-        RegisterListener(new PlayerRestrictionsManager());
-        RegisterListener(new ModerCommandListener());
-        RegisterListener(new ChatListener());
-        RegisterListener(new MinecraftMessagesListener());
-        RegisterListener(new AdvancementListener());
-        RegisterListener(new ModerManager());
-        RegisterListener(new KnockListener());
-        RegisterListener(new BotListener());
+        registerCommand("ferrum", new ReloadConfig(), null, "ferrum.reload");
 
-        RegisterCommand("ferrum", new ReloadConfig(), null, "ferrum.reload");
-
-        RegisterCommand("fly", new FlyCommand(), null, "ferrum.fly");
+        CreateProjectileItemCommand cpiCommand = new CreateProjectileItemCommand();
+        registerCommand("cpi", cpiCommand, cpiCommand, "ferrum.cpi");
 
         // #WorldManager
         BatCarManager batCar = new BatCarManager();
 
-        RegisterListener(batCar);
-        RegisterCommand("batcar", batCar, null, "ferrum.batcar");
+        registerCommand("batcar", batCar, null, "ferrum.batcar");
 
         // #WorldManager
 
         WorldsManager worldsManager = new WorldsManager();
 
-        RegisterCommand("tpworld", worldsManager, worldsManager, "ferrum.tpworld");;
+        registerCommand("world", worldsManager, worldsManager, "ferrum.worldmanager");;
 
         // #Anime and pricols
 
         PortalManager portalManager = new PortalManager();
         ChargeManager chargeManager = new ChargeManager();
 
-        RegisterCommand("portal", portalManager, portalManager, "ferrum.portal_manager");;
-        RegisterCommand("charge", chargeManager, chargeManager, "ferrum.charge_manager");;
+        registerCommand("infinity_void", new InfinityVoid(),null,"ferrum.admin");
+
+        registerCommand("portal", portalManager, portalManager, "ferrum.portal_manager");;
+        registerCommand("charge", chargeManager, chargeManager, "ferrum.charge_manager");;
 
         // #AccountMover
 
-        RegisterCommand("move_acc", new AccountMoveCommand(), null, "ferrum.acc_move");
-        RegisterCommand("delete_acc", new DeletePlayerDataCommand(), null, "ferrum.acc_delete");
+        registerCommand("move_acc", new AccountMoveCommand(), null, "ferrum.acc_move");
+        registerCommand("delete_acc", new DeletePlayerDataCommand(), null, "ferrum.acc_delete");
 
         // #Vote
         VoteCommand voteCommand = new VoteCommand();
-        RegisterCommand("vote", voteCommand, voteCommand, null);
+        registerCommand("vote", voteCommand, voteCommand, null);
 
         // #Rollback
-        RegisterCommand("rollback", new RollbackCommand(), null, null);
+        registerCommand("rollback", new RollbackCommand(), null, null);
 
         // #Spy
         SpyManager spyManager = new SpyManager();
-        RegisterListener(spyManager);
-        RegisterCommand("spy", spyManager, null, "ferrum.spy");
+        registerCommand("spy", spyManager, null, "ferrum.spy");
 
         // #Commands
 
         GetHourCommand getHourCommand = new GetHourCommand();
-        RegisterCommand("playtime", getHourCommand, getHourCommand, null);// #PLAYTIME
+        registerCommand("playtime", getHourCommand, getHourCommand, null);// #PLAYTIME
         LastSeenCommand lastSeenCommand = new LastSeenCommand();
-        RegisterCommand("lastseen", lastSeenCommand, lastSeenCommand, null);// #LASTSEEN
+        registerCommand("lastseen", lastSeenCommand, lastSeenCommand, null);// #LASTSEEN
 
         // #SIZE
 
         ScaleModeManager scaleMode = new ScaleModeManager();
-        RegisterListener(scaleMode);
-        RegisterCommand("size", scaleMode, scaleMode, "ferrum.size");
+        registerCommand("size", scaleMode, scaleMode, "ferrum.size");
 
         // #SPECTATOR
 
         SpecManager specCommand = new SpecManager();
-        RegisterListener(specCommand);
-        RegisterCommand("spec", specCommand, null, "ferrum.moder");
+        registerCommand("spec", specCommand, null, "ferrum.moder");
 
         // #MODER_MOD
         ModerModCommand moderCommand = new ModerModCommand();
-        RegisterCommand("moder", moderCommand, moderCommand, "ferrum.moder");
+        registerCommand("moder", moderCommand, moderCommand, "ferrum.moder");
 
         // #RATING
 
         SocialRating socialRating = new SocialRating();
-        RegisterCommand("rating", socialRating, socialRating, "ferrum.rating");
+        registerCommand("rating", socialRating, socialRating, "ferrum.rating");
 
         // #
 
         RenderDistanceManager renderDistanceManager = new RenderDistanceManager();
-        RegisterListener(renderDistanceManager);
-        RegisterCommand("render_limit", renderDistanceManager, null, "ferrum.render_limit");
+        registerCommand("render_limit", renderDistanceManager, null, "ferrum.render_limit");
 
         // #CHAT
 
-        RegisterCommand("msg", new PrivateMessageCommand(), null, null);
-        RegisterCommand("reply", new ReplyCommand(), null, null);
+        registerCommand("msg", new PrivateMessageCommand(), null, null);
+        registerCommand("reply", new ReplyCommand(), null, null);
 
         IgnoreBD.init();
 
-        RegisterCommand("ignore", new IgnoreCommand(), null, null);
+        registerCommand("ignore", new IgnoreCommand(), null, null);
 
         // #ALERT ROLE
 
-        AlertRoleCommand alearRoleCommand = new AlertRoleCommand();
-        RegisterCommand("alert", alearRoleCommand, alearRoleCommand, "ferrum.command.alert");
+        AlertRoleCommand alertRoleCommand = new AlertRoleCommand();
+        registerCommand("alert", alertRoleCommand, alertRoleCommand, "ferrum.command.alert");
 
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
             PlaceholderHook placeHolderManager = new PlaceholderHook();
 
-            RegisterListener(placeHolderManager);
+            registerListener(placeHolderManager);
             placeHolderManager.register();
         } else {
             getLogger().warning("PlaceholderAPI offline!");
@@ -189,8 +184,8 @@ public final class FerrumCore extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        if (luckPermsHook != null) {
-            luckPermsHook.disable();
+        if (LuckPermsHook.luckPermsHook != null) {
+            LuckPermsHook.disable();
         }
         ModerManager.kickAllModerMod();
         SpecManager.kickAllSpec();
@@ -216,7 +211,7 @@ public final class FerrumCore extends JavaPlugin {
         }
     }
 
-    private void RegisterCommand(String name, CommandExecutor commandExecutor, TabCompleter tabCompleter, String permission ){
+    private void registerCommand(String name, CommandExecutor commandExecutor, TabCompleter tabCompleter, String permission ){
         PluginCommand command = getCommand(name);
         if (command == null) {
             return;
@@ -227,7 +222,66 @@ public final class FerrumCore extends JavaPlugin {
             command.setPermission(permission);
         }
     }
-    private void RegisterListener(Listener listener){
+
+    private void registerAllCommands() {
+        Reflections reflections = new Reflections("org.ferrum.ferrumCore");
+
+        // находим все классы, которые implements FerrumListener
+        Set<Class<? extends FerrumCommand>> listenerClasses = reflections.getSubTypesOf(FerrumCommand.class);
+
+        for (Class<? extends FerrumCommand> cls : listenerClasses) {
+            try {
+                FerrumCommand command = cls.getDeclaredConstructor().newInstance();
+                Bukkit.getCommandMap().register(command.getName(), command);
+
+                plugin.getLogger().info("Loaded Command: " + cls.getSimpleName());
+
+            } catch (NoSuchMethodException e) {
+                // Конструктор с таким набором аргументов не найден
+                plugin.getLogger().severe("Конструктор не найден: " + e);
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                // Конструктор существует, но он protected/private
+                plugin.getLogger().severe("Нет доступа к конструктору: " + e);
+                e.printStackTrace();
+            } catch (InstantiationException e) {
+                // Класс абстрактный или интерфейс
+                plugin.getLogger().severe("Не удалось создать объект (abstract/interface?): " + e);
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                // Ошибка внутри конструктора при вызове newInstance()
+                plugin.getLogger().severe("Ошибка внутри конструктора: " + e.getCause());
+                e.printStackTrace();
+            }
+            catch (Exception e) {
+                plugin.getLogger().severe("Failed to load Command: " + cls.getName());
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+
+    private void registerAllListeners() {
+        Reflections reflections = new Reflections("org.ferrum.ferrumCore");
+
+        // находим все классы, которые implements FerrumListener
+        Set<Class<? extends FerrumListener>> listenerClasses = reflections.getSubTypesOf(FerrumListener.class);
+
+        for (Class<? extends FerrumListener> cls : listenerClasses) {
+            try {
+                registerListener(cls.getDeclaredConstructor().newInstance());
+
+                plugin.getLogger().info("Loaded listener: " + cls.getSimpleName());
+            } catch (Exception e) {
+                plugin.getLogger().severe("Failed to load listener: " + cls.getName());
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+    private void registerListener(Listener listener){
         getServer().getPluginManager().registerEvents(listener,this);
 
     }
@@ -237,7 +291,7 @@ public final class FerrumCore extends JavaPlugin {
     }
 
     public static void runCommand(String command) {
-        Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
+        Scheduler.run(() -> Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command));
     }
 
     public static void log(String msg) {

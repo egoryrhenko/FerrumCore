@@ -25,16 +25,16 @@ import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.ferrum.ferrumCore.FerrumCore;
+import org.ferrum.ferrumCore.utils.FerrumListener;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
 import java.util.*;
 
-public class PlayerRestrictionsManager implements Listener, CommandExecutor {
+public class PlayerRestrictionsManager extends FerrumListener {
 
     public static ArrayList<String> DangerBlocks = new ArrayList<>();
     public static ArrayList<String> DangerEntity = new ArrayList<>();
-    private final Set<UUID> fightPlayers = new HashSet<>();
 
 
     private boolean check(Player player){
@@ -108,10 +108,6 @@ public class PlayerRestrictionsManager implements Listener, CommandExecutor {
         }
         if (attacker == null) return;
 
-        if (check(attacker) && !check(victim)) {
-            attacker.sendMessage(ConfigManager.getStringByKey("attack_limited_player", attacker));
-        }
-
         if (attacker.hasPermission("ferrum.block.mace") && attacker.getInventory().getItemInMainHand().getType().equals(Material.MACE)) {
 
             if (event.getDamage() > 10) {
@@ -126,32 +122,15 @@ public class PlayerRestrictionsManager implements Listener, CommandExecutor {
 
         if (check(attacker) || attacker.hasPermission("ferrum.promotion.fight")) return;
 
-        if (check(attacker)!=(check(victim) || fightPlayers.contains(victim.getUniqueId()))) {
+        attacker.sendMessage(ConfigManager.getStringByKey("limited_action", attacker));
+        event.setCancelled(true);
 
-            attacker.sendMessage(ConfigManager.getStringByKey("limited_action", attacker));
-            event.setCancelled(true);
-        }
     }
 
     public void sendActionBar(Player player, String message) {
         player.sendActionBar(Component.text(message));
     }
 
-    @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String @NotNull [] args) {
-
-        if (sender instanceof Player player) {
-            if (fightPlayers.contains(player.getUniqueId())) {
-                player.sendMessage("Теперь игроки с запретом на пвп не могут атаковать тебя");
-                fightPlayers.remove(player.getUniqueId());
-            } else {
-                player.sendMessage("Теперь игроки с запретом на пвп могут атаковать тебя");
-                fightPlayers.add(player.getUniqueId());
-            }
-            return true;
-        }
-        return false;
-    }
 
     @EventHandler
     public void onSneak(PlayerToggleSneakEvent event) {

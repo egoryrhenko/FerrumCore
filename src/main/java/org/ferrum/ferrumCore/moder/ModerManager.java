@@ -9,10 +9,12 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.ferrum.ferrumCore.FerrumCore;
+import org.ferrum.ferrumCore.utils.FerrumListener;
+import org.ferrum.ferrumCore.utils.TeleportUtils;
 
 import java.util.HashMap;
 
-public class ModerManager implements Listener {
+public class ModerManager extends FerrumListener {
 
     public static HashMap<Player, ModerData> activeModerData = new HashMap<>();
 
@@ -22,6 +24,7 @@ public class ModerManager implements Listener {
 
     public static void enableModerMod(Player player) {
         FerrumCore.runCommand("irp forcebackup player " + player.getName());
+
         activeModerData.put(player, new ModerData(player.getLocation(), player.getInventory().getContents()));
         player.getInventory().clear();
         player.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, -1,0,false, false));
@@ -30,8 +33,8 @@ public class ModerManager implements Listener {
 
     public static void disableModerMod(Player player) {
         ModerData moderData = activeModerData.get(player);
-        player.teleport(moderData.location);
-        player.getInventory().setContents(moderData.inventory);
+        TeleportUtils.teleport(player, moderData.location());
+        player.getInventory().setContents(moderData.inventory());
         player.setGameMode(GameMode.SURVIVAL);
         activeModerData.remove(player);
         player.removePotionEffect(PotionEffectType.SATURATION);

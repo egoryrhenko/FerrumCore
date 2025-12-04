@@ -101,6 +101,14 @@
       <scope>system</scope>
       <systemPath>${project.basedir}/libs/DiscordLink-0.1-api.jar</systemPath>
     </dependency>
+    <dependency>
+      <groupId>org.ferrum</groupId>
+      <artifactId>LiteBans</artifactId>
+      <version>0.1</version>
+      <classifier>api</classifier>
+      <scope>system</scope>
+      <systemPath>${project.basedir}/libs/LiteBansAPI.jar</systemPath>
+    </dependency>
   </dependencies>
   <properties>
     <java.version>21</java.version>

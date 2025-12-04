@@ -8,14 +8,12 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.ferrum.ferrumCore.FerrumCore;
 import org.ferrum.ferrumCore.chat.util.ChatUtil;
+import org.ferrum.ferrumCore.utils.FerrumListener;
 
 import java.util.LinkedList;
 import java.util.Queue;
 
-public class BotListener implements Listener {
-
-    private final int DETECTION_WINDOW_MS = 30_000; // за какой промежуток анализируем
-    private final int MAX_JOINS_IN_WINDOW = 10;
+public class BotListener extends FerrumListener {
 
     private final Queue<Long> loginTimestamps = new LinkedList<>();
 
@@ -29,6 +27,8 @@ public class BotListener implements Listener {
 
         // Очистка старых входов
         loginTimestamps.add(now);
+        // за какой промежуток анализируем
+        int DETECTION_WINDOW_MS = 30_000;
         while (!loginTimestamps.isEmpty() && loginTimestamps.peek() < now - DETECTION_WINDOW_MS) {
             loginTimestamps.poll();
         }
@@ -40,6 +40,7 @@ public class BotListener implements Listener {
         FerrumCore.log("Player " + player.getName() + " joined. Total joins in window: " + joinCount);
 
         // Условие потенциальной атаки
+        int MAX_JOINS_IN_WINDOW = 10;
         if (joinCount >= MAX_JOINS_IN_WINDOW) {
             event.joinMessage(null);
             player.kick(ChatUtil.formatText("Подозрение на бота"));

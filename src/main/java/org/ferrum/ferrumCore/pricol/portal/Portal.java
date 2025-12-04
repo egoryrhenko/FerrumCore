@@ -1,88 +1,103 @@
-package org.ferrum.ferrumCore.portal;
+package org.ferrum.ferrumCore.pricol.portal;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 import org.ferrum.ferrumCore.FerrumCore;
 import org.ferrum.ferrumCore.managers.CooldownManager;
-import org.joml.Matrix3d;
-import org.joml.Vector3d;
+import org.ferrum.ferrumCore.utils.Scheduler;
 
 import java.util.*;
 
 public class Portal {
-    private static final float PI2 = (float) (Math.PI * 2);
+    public static final float PI2 = (float) (Math.PI * 2);
 
-    private final Location portalPosition;
-    private final Vector portalRotation;
-    private final Location locationToTeleport;
-    private final float speed;
-    private final float radius;
-    private final int lifeTime;
-    private final int activationTime;
-    private final float step;
+    protected final Location position;
+    protected final Vector portalRotation;
+    protected final Location locationToTeleport;
+    protected final float speed;
+    protected final float radius;
+    protected final int lifeTime;
+    protected final int activationTime;
+    protected final int closeTime;
+    protected final float step;
 
-    private BukkitTask task;
-    private static int lastId;
+    protected Particle frameParticle;
+    protected byte state;
+
+    protected Scheduler.Task task;
+    protected static int lastId;
     public final int id;
 
-
-    public Portal(Location portalPosition, Vector portalRotation, Location locationToTeleport, int lifeTime, int activationTime, float scale, int points) {
-        this.portalPosition = portalPosition;
+    protected Portal(Location position, Vector portalRotation, Location locationToTeleport, float speed, float radius, int lifeTime, int activationTime, int closeTime, float step) {
+        this.position = position;
         this.portalRotation = portalRotation;
         this.locationToTeleport = locationToTeleport;
-
+        this.speed = speed;
+        this.radius = radius;
         this.lifeTime = lifeTime;
         this.activationTime = activationTime;
-        this.speed = scale / 8.8f;
-        this.radius = scale;
-        this.step = PI2 / points;
+        this.closeTime = closeTime;
+        this.step = step;
 
-        id = lastId;
+        this.id = lastId;
         lastId++;
+    }
+
+
+
+    public Portal(Location position, Vector portalRotation, Location locationToTeleport,  float scale, int lifeTime, int activationTime, int closeTime, int points) {
+        this(position, portalRotation, locationToTeleport,scale / 8.8f, scale, lifeTime, activationTime, closeTime, PI2 / points);
 
         createPortal();
     }
 
     private void createPortal() {
-        task = new BukkitRunnable() {
+        task = Scheduler.runTimer(new BukkitRunnable() {
             int ticks = 0;
 
             @Override
             public void run() {
-                if (ticks > lifeTime) {
-                    cancel();
-                    return;
-                }
-                if (ticks < activationTime) {
-                    renderPortalFrameOpenAnimation(ticks);
-                } else {
-                    renderPortalFrame(ticks);
-                    if (lifeTime - ticks > activationTime) {
+                switch (PortalState.forId(state)) {
+                    case OPEN -> {
+                        renderPortalFrameOpenAnimation(ticks);
+                        if (ticks > activationTime) {
+                            state++;
+                        }
+                    }
+                    case WORK -> {
+                        renderPortalFrame(ticks);
                         renderPortal(ticks);
                         teleportPlayers();
+                        if (ticks > closeTime) {
+                            state++;
+                        }
+                    }
+                    case CLOSE -> {
+                        renderPortalFrame(ticks);
+                        if (ticks > lifeTime) {
+                            close();
+                            return;
+                        }
                     }
                 }
-
-
-                teleportPlayers();
                 ticks++;
             }
-        }.runTaskTimer(FerrumCore.plugin, 0, 1);
+        }, 0,1);
     }
 
     public void close() {
-        task.cancel();
+        if (task != null) {
+            task.cancel();
+            task = null;
+            PortalManager.portals.remove(this);
+        }
     }
 
-    private void renderPortalFrame(int ticks) {
-        final float innerRadius = radius * 0.88f;
+    protected void renderPortalFrame(int ticks) {
+
         double angleX = Math.toRadians(portalRotation.getX()); // Угол по X
         double angleY = Math.toRadians(portalRotation.getY()); // Угол по Y
         double angleZ = Math.toRadians(portalRotation.getZ()); // Угол по Z
@@ -109,23 +124,23 @@ public class Portal {
             rotateAroundY(pointVelocity, angleY);
             rotateAroundZ(pointVelocity, angleZ);
 
-            // 3. Конвертируем в мировые координаты
-            double x = portalPosition.getX() + point.getX();
-            double y = portalPosition.getY() + point.getY(); //Переделать
-            double z = portalPosition.getZ() + point.getZ();
-
-//            double xo = portalPosition.getX() + pointOrig.getX();
-//            double yo = portalPosition.getY() + pointOrig.getY(); //Переделать
-//            double zo = portalPosition.getZ() + pointOrig.getZ();
-
-            // 4. Спавним частицу
-            portalPosition.getWorld().spawnParticle(Particle.FLAME, x, y, z, 0, pointVelocity.getX(), pointVelocity.getY(), pointVelocity.getZ(), speed, null, true);
-            //portalPosition.getWorld().spawnParticle(Particle.CRIT, xo, yo, zo, 0, pointVelocityOrig.getX(), pointVelocityOrig.getY(), pointVelocityOrig.getZ(), speed, null, true);
+            position.getWorld().spawnParticle(
+                    frameParticle,
+                    position.getX() + point.getX(),
+                    position.getY() + point.getY(),
+                    position.getZ() + point.getZ(),
+                    0,
+                    pointVelocity.getX(),
+                    pointVelocity.getY(),
+                    pointVelocity.getZ(),
+                    speed,
+                    null,
+                    true
+            );
         }
-        //portalPosition.getWorld().spawnParticle(Particle.BUBBLE, portalPosition.getX(), portalPosition.getY(), portalPosition.getZ(), 0, 0, 0, 0, 0, null, true);
     }
 
-    private void renderPortalFrameOpenAnimation(int ticks) {
+    protected void renderPortalFrameOpenAnimation(int ticks) {
 
         double angleX = Math.toRadians(portalRotation.getX()); // Угол по X
         double angleY = Math.toRadians(portalRotation.getY()); // Угол по Y
@@ -156,18 +171,24 @@ public class Portal {
             rotateAroundY(pointV, angleY);
             rotateAroundZ(pointV, angleZ);
 
-            // 3. Конвертируем в мировые координаты
-            double x = portalPosition.getX() + point.getX();
-            double y = portalPosition.getY() + point.getY(); //Переделать
-            double z = portalPosition.getZ() + point.getZ();
-
-            // 4. Спавним частицу
-            portalPosition.getWorld().spawnParticle(Particle.FLAME, x, y, z, 0, pointV.getX(), pointV.getY(), pointV.getZ(), speed, null, true);
+            position.getWorld().spawnParticle(
+                    frameParticle,
+                    position.getX() + point.getX(),
+                    position.getY() + point.getY(),
+                    position.getZ() + point.getZ(),
+                    0,
+                    pointV.getX(),
+                    pointV.getY(),
+                    pointV.getZ(),
+                    speed,
+                    null,
+                    true
+            );
         }
 
     }
 
-    private void renderPortal(int ticks) {
+    protected void renderPortal(int ticks) {
         float innerRadius = (radius * .88f) + (0.1f * (ticks % 2));
 
         double angleX = Math.toRadians(portalRotation.getX()); // Угол по X
@@ -188,60 +209,48 @@ public class Portal {
                     rotateAroundY(point, angleY);
                     rotateAroundZ(point, angleZ);
 
-                    portalPosition.getWorld().spawnParticle(Particle.END_ROD, portalPosition.getX() + point.getX(), portalPosition.getY() +  point.getY(), portalPosition.getZ() +  point.getZ(), 0, 0, 0, 0, speed, null, true);
+                    position.getWorld().spawnParticle(Particle.END_ROD, position.getX() + point.getX(), position.getY() +  point.getY(), position.getZ() +  point.getZ(), 0, 0, 0, 0, speed, null, true);
 
                     }
                 }
             }
         }
 
-    private static void rotateAroundX(Vector v, double angle) {
+    protected static void rotateAroundX(Vector v, double angle) {
         double y = v.getY() * Math.cos(angle) - v.getZ() * Math.sin(angle);
         double z = v.getY() * Math.sin(angle) + v.getZ() * Math.cos(angle);
         v.setY(y);
         v.setZ(z);
     }
 
-    private static void rotateAroundY(Vector v, double angle) {
+    protected static void rotateAroundY(Vector v, double angle) {
         double x = v.getX() * Math.cos(angle) + v.getZ() * Math.sin(angle);
         double z = -v.getX() * Math.sin(angle) + v.getZ() * Math.cos(angle);
         v.setX(x);
         v.setZ(z);
     }
 
-    private static void rotateAroundZ(Vector v, double angle) {
+    protected static void rotateAroundZ(Vector v, double angle) {
         double x = v.getX() * Math.cos(angle) - v.getY() * Math.sin(angle);
         double y = v.getX() * Math.sin(angle) + v.getY() * Math.cos(angle);
         v.setX(x);
         v.setY(y);
     }
 
-    public boolean checkPlayerTouchWithParticles(Entity player) {
+    protected boolean checkPlayerTouchWithParticles(Entity player) {
         //logL(player.getLocation());
         //logL(portalPosition);
-        Vector relative = player.getLocation().toVector().subtract(portalPosition.toVector());
+        Vector relative = player.getLocation().toVector().subtract(position.toVector());
         //FerrumCore.log(relative.getX() + ", " + relative.getY() + ", " + relative.getZ());
         // Обратное вращение портала
         rotateAroundZ(relative, -Math.toRadians(portalRotation.getZ()));
         rotateAroundY(relative, -Math.toRadians(portalRotation.getY()));
         rotateAroundX(relative, -Math.toRadians(portalRotation.getX()));
 
-        // Расстояние по плоскости XY
-        double distanceSquared = relative.getX() * relative.getX() + relative.getY() * relative.getY();
-
-        boolean inRing = distanceSquared <= radius * radius && relative.getZ() < 0.15f && relative.getZ() > -0.15f;
-//        Particle particleType = inRing ? Particle.HAPPY_VILLAGER : Particle.ANGRY_VILLAGER;
-//
-//        // Спавним частицу на позиции игрока для наглядности
-//        portalPosition.getWorld().spawnParticle(particleType,
-//                player.getLocation().getX(),
-//                player.getLocation().getY(),
-//                player.getLocation().getZ(),
-//                1, 0, 0, 0, 0, null, true);
-        return inRing;
+        return relative.getX() * relative.getX() + relative.getY() * relative.getY() <= radius * radius && relative.getZ() < 0.15f && relative.getZ() > -0.15f;
     }
-    private void teleportPlayers() {
-        Collection<Entity> nearbyEntity = portalPosition.getNearbyEntities(radius, radius, radius);
+    protected void teleportPlayers() {
+        Collection<Entity> nearbyEntity = position.getNearbyEntities(radius, radius, radius);
         for (Entity entity : nearbyEntity) {
 
             if (!checkPlayerTouchWithParticles(entity)) {
@@ -252,22 +261,13 @@ public class Portal {
                 continue;
             }
 
-            //if (cooldown.containsKey(entity.getUniqueId())) if (ticks - cooldown.get(entity.getUniqueId()) < 60) continue;
-            /*
-            switch (side) {
-                case "x":
-                    if (Math.abs(portalPosition.getX() - entity.getLocation().getX()) > 0.2f) continue;
-                case "y":
-                    if (Math.abs(portalPosition.getY() - entity.getLocation().getY()) > 0.2f) continue;
-                case "z":
-                    if (Math.abs(portalPosition.getZ() - entity.getLocation().getZ()) > 0.2f) continue;
-            }
-             */
             CooldownManager.setCooldown(entity.getUniqueId(), "teleport",2000);
+            Vector velocity = entity.getVelocity();
             entity.teleport(locationToTeleport);
+            entity.setVelocity(velocity);
         }
     }
-    private void logL(Location location) {
+    protected void logLoc(Location location) {
         FerrumCore.log("[Loc] "+location.getX() + ", " + location.getY() + ", "+location.getX());
     }
 }

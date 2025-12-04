@@ -64,7 +64,7 @@ public class PrivateMessageCommand implements CommandExecutor {
 
 
         if (sender instanceof Player player) {
-            ReplyCommand.senderByRecipient.put(recipient, player);
+            ReplyCommand.senderByRecipient.put(recipient.getName(), player.getName());
         }
 
         sender.sendMessage(messageSender);

@@ -115,5 +115,19 @@
             <scope>system</scope>
             <systemPath>${project.basedir}/libs/DiscordLink-0.1-api.jar</systemPath>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/litebans/api -->
+        <dependency>
+            <groupId>org.ferrum</groupId>
+            <artifactId>LiteBans</artifactId>
+            <version>0.1</version>
+            <classifier>api</classifier>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/libs/LiteBansAPI.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>0.10.2</version>
+        </dependency>
     </dependencies>
 </project>

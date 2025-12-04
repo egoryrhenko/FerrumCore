@@ -29,7 +29,7 @@ public class SpyEnableData extends Data {
     }
 
     public static void remove(String name) {
-        spyEnabled.add(name);
+        spyEnabled.remove(name);
         getData(SpyEnableData.class).set("Spy", new ArrayList<>(spyEnabled));
         saveFile(SpyEnableData.class);
     }

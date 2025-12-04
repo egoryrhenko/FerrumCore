@@ -9,8 +9,9 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.ferrum.ferrumCore.chat.util.ChatUtil;
 import org.ferrum.ferrumCore.managers.save.SuffixData;
+import org.ferrum.ferrumCore.utils.FerrumListener;
 
-public class MinecraftMessagesListener implements Listener {
+public class MinecraftMessagesListener extends FerrumListener {
 
 
     @EventHandler(priority = EventPriority.MONITOR)

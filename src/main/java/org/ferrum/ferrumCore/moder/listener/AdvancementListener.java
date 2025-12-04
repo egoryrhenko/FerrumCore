@@ -9,8 +9,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerAdvancementDoneEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.ferrum.ferrumCore.moder.ModerManager;
+import org.ferrum.ferrumCore.utils.FerrumListener;
 
-public class AdvancementListener implements Listener {
+public class AdvancementListener extends FerrumListener {
 
     @EventHandler
     public void onPlayerLeave(PlayerAdvancementCriterionGrantEvent event) {

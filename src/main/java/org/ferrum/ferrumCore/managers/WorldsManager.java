@@ -10,20 +10,27 @@ import org.ferrum.ferrumCore.FerrumCore;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.awt.print.Paper;
 import java.util.List;
 
 public class WorldsManager implements CommandExecutor, TabCompleter {
 
-    public static World createNewWorld(String worldName, World.Environment environment, WorldType worldType) {
+    public static World getWorld(String worldName) {
+        return getWorld(worldName, World.Environment.NORMAL, WorldType.NORMAL);
+    }
 
-        World world = Bukkit.getWorld(worldName);
+    public static World getWorld(String worldName, World.Environment environment, WorldType worldType) {
+
+        World world = Bukkit.getWorlds()
+                .stream()
+                .filter(w -> w.getName().equals(worldName))
+                .findFirst()
+                .orElse(null);
 
         if (world != null) {
-            FerrumCore.log("[WorldManager] нашол старый мир");
+            FerrumCore.log("[WorldManager] нашёл старый мир");
             return world;
         }
-        FerrumCore.log("[WorldManager] не нашол старый мир");
+        FerrumCore.log("[WorldManager] не нашёл старый мир");
         // Создаем WorldCreator с именем мира
         WorldCreator creator = new WorldCreator(worldName);
 
@@ -42,29 +49,53 @@ public class WorldsManager implements CommandExecutor, TabCompleter {
 
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String @NotNull [] args) {
-        if (args.length == 1) {
-            if (commandSender instanceof Player player){
-                player.teleport(createNewWorld(args[0], World.Environment.NORMAL, WorldType.FLAT).getSpawnLocation());
+        try {
+            switch (args[0]) {
+                case "create" -> {
+                    if (args.length == 4) {
+                        World world = getWorld(args[1], World.Environment.valueOf(args[2]), WorldType.getByName(args[3]));
+                        commandSender.sendMessage("Создан мир: " + args[1] + ", Environment: " + args[2] + ", WorldType: " + args[3]);
+                        if (commandSender instanceof Player player) {
+                            player.teleport(world.getSpawnLocation());
+                        }
+                        return true;
+                    }
+                    commandSender.sendMessage("Args error");
+                    return true;
+                }
+
+                case "tp" -> {
+                    if (commandSender instanceof Player player) {
+                        player.teleport(getWorld(args[1]).getSpawnLocation());
+                        commandSender.sendMessage(player.getName() + " перемещен на точку спавна мира -> " + args[1]);
+                        return true;
+                    }
+                    commandSender.sendMessage("простите извините но вы не наследуетесь от класса игрока");
+                    return true;
+                }
+
+                case "unload" -> {
+                    Bukkit.unloadWorld(args[1], true);
+                    commandSender.sendMessage("отгружен мир -> " + args[1]);
+                }
+
             }
+
+            return true;
+        } catch (Exception ex) {
+            commandSender.sendMessage(ex.getMessage());
+            ex.printStackTrace();
+            return false;
         }
-        if (args.length == 3){
-            World world = createNewWorld(args[0], World.Environment.valueOf(args[1]), WorldType.getByName(args[2]));
-            commandSender.sendMessage("Мир создан '" + args[0] + "' " + World.Environment.valueOf(args[1]).name() + " " + WorldType.getByName(args[2]));
-            if (commandSender instanceof Player player){
-                player.teleport(world.getSpawnLocation());
-            }
-        } else {
-            commandSender.sendMessage("Args error");
-        }
-        return true;
     }
 
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String @NotNull [] args) {
         return switch (args.length) {
-            case 1 -> List.of("name");
-            case 2 -> List.of("NORMAL", "NETHER", "THE_END");
-            case 3 -> List.of("NORMAL", "AMPLIFIED", "FLAT", "LARGE_BIOMES");
+            case 1 -> List.of("create","tp","unload");
+            case 2 -> Bukkit.getWorlds().stream().map(World::getName).toList();
+            case 3 -> args[0].equals("create") ? List.of("NORMAL", "NETHER", "THE_END") : List.of();
+            case 4 -> args[0].equals("create") ? List.of("DEFAULT", "FLAT", "LARGEBIOMES", "AMPLIFIED") : List.of();
             default -> List.of();
         };
     }

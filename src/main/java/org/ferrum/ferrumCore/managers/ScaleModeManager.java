@@ -1,7 +1,6 @@
 package org.ferrum.ferrumCore.managers;
 
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.command.Command;
@@ -10,23 +9,24 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.ferrum.ferrumCore.FerrumCore;
+import org.ferrum.ferrumCore.utils.FerrumListener;
+import org.ferrum.ferrumCore.utils.Scheduler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.UUID;
 
-public class ScaleModeManager implements CommandExecutor, Listener, TabCompleter {
+public class ScaleModeManager extends FerrumListener implements CommandExecutor, TabCompleter {
     private static final float DEFAULT_SPEED = 0.005f;
-    HashSet<Player> PlayerSmaleScale = new HashSet<>();
+    HashSet<UUID> playerSmaleScale = new HashSet<>();
 
     private boolean isSmale(Player player) {
-        return PlayerSmaleScale.contains(player);
+        return playerSmaleScale.contains(player.getUniqueId());
     }
 
     private AttributeInstance getScaleAttribute(Player player) {
@@ -60,7 +60,7 @@ public class ScaleModeManager implements CommandExecutor, Listener, TabCompleter
                     player.sendMessage(Component.text("Минимальное значение 0.8"));
                 }
                 if (value != 1f) {
-                    PlayerSmaleScale.add(player);
+                    playerSmaleScale.add(player.getUniqueId());
                 }
 
                 GrowAnimation(getScaleAttribute(player), Math.max(0.8f, Math.min(1.2f, value)), DEFAULT_SPEED);
@@ -71,10 +71,10 @@ public class ScaleModeManager implements CommandExecutor, Listener, TabCompleter
                     return true;
                 }
                 if (isSmale(player)){
-                    PlayerSmaleScale.remove(player);
+                    playerSmaleScale.remove(player.getUniqueId());
                     GrowAnimation(getScaleAttribute(player),1f, DEFAULT_SPEED);
                 } else {
-                    PlayerSmaleScale.add(player);
+                    playerSmaleScale.add(player.getUniqueId());
                     GrowAnimation(getScaleAttribute(player), 0.8f, DEFAULT_SPEED);
                 }
             }
@@ -91,14 +91,14 @@ public class ScaleModeManager implements CommandExecutor, Listener, TabCompleter
                 return;
             }
             if (isSmale(damager)) {
-                PlayerSmaleScale.remove(damager);
+                playerSmaleScale.remove(damager.getUniqueId());
                 getScaleAttribute(damager).setBaseValue(1f);
             }
             CooldownManager.setCooldown(damager.getUniqueId(), "size", ConfigManager.getIntByKey("size_cooldown"));
 
             if (event.getEntity() instanceof Player player){
                 if (isSmale(player)){
-                    PlayerSmaleScale.remove(player);
+                    playerSmaleScale.remove(damager.getUniqueId());
                     getScaleAttribute(player).setBaseValue(1f);
                 }
                 CooldownManager.setCooldown(damager.getUniqueId(), "size", ConfigManager.getIntByKey("size_cooldown"));
@@ -111,12 +111,13 @@ public class ScaleModeManager implements CommandExecutor, Listener, TabCompleter
     public void PlayerQuit(PlayerQuitEvent event){
         Player player = event.getPlayer();
         if (isSmale(player)) {
-            PlayerSmaleScale.remove(player);
+            playerSmaleScale.remove(player.getUniqueId());
             getScaleAttribute(player).setBaseValue(1f);
         }
     }
     private void GrowAnimation(AttributeInstance attribute, float EndValue, float speed){
-        new BukkitRunnable() {
+        if (speed <= 0) return;
+        Scheduler.runTimer(new BukkitRunnable() {
             private float size = (float) attribute.getBaseValue();
             private final boolean isGrow = size < EndValue;
 
@@ -139,7 +140,7 @@ public class ScaleModeManager implements CommandExecutor, Listener, TabCompleter
                 }
 
             }
-        }.runTaskTimer(FerrumCore.plugin, 0L, 1L);
+        },0,1);
     }
 
     @Override

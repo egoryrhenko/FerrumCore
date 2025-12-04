@@ -1,23 +1,27 @@
 package org.ferrum.ferrumCore.chat.listeners;
 
 import io.papermc.paper.event.player.AsyncChatEvent;
+import net.kyori.adventure.chat.SignedMessage;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.permissions.Permissible;
 import org.ferrum.discordLink.api.DiscordLinkAPI;
+import org.ferrum.ferrumCore.FerrumCore;
 import org.ferrum.ferrumCore.chat.util.ChatUtil;
 import org.ferrum.ferrumCore.chat.util.IgnoreBD;
 import org.ferrum.ferrumCore.chat.util.SpyManager;
 import org.ferrum.ferrumCore.managers.save.SuffixData;
+import org.ferrum.ferrumCore.utils.FerrumListener;
 
 import java.util.HashSet;
 
-public class ChatListener implements Listener {
+public class ChatListener extends FerrumListener {
 
     private static final int LOCAL_RADIUS_SQUARED = 10000; // 100 блоков
 
@@ -26,6 +30,7 @@ public class ChatListener implements Listener {
         Player player = event.getPlayer();
         String message = PlainTextComponentSerializer.plainText().serialize(event.message()).trim();
         HashSet<String> whoIgnored = IgnoreBD.getIgnoredBy(player.getName());
+
 
         if (message.isEmpty()) return;
 
@@ -62,6 +67,9 @@ public class ChatListener implements Listener {
                         .append(ChatUtil.formatText((" " + SuffixData.get(source) + " #a4a4a4› ").replaceAll("\\s+", " ")))
                         .append(formatMessage(source, text)));
 
+        if (DiscordLinkAPI.getInstance() == null) {
+            return;
+        }
         DiscordLinkAPI.sendMessageInGameChat(sender.getName(), text);
     }
 
@@ -111,7 +119,7 @@ public class ChatListener implements Listener {
         SpyManager.spyEnable.stream()
                 .filter(p -> !event.viewers().contains(p))
                 .forEach(
-                        player -> player.sendMessage(ChatUtil.formatText("&7\uD83D\uDC41 | "+ sender.getName() + " › " + message.substring(2)))
+                        player -> player.sendMessage(ChatUtil.formatText("&7\uD83D\uDC41 | "+ sender.getName() + " › " + message))
                 );
     }
 

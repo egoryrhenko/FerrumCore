@@ -10,11 +10,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.ferrum.ferrumCore.utils.FerrumListener;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.plaf.basic.BasicButtonUI;
 
-public class RenderDistanceManager implements Listener, CommandExecutor {
+public class RenderDistanceManager extends FerrumListener implements CommandExecutor {
     @EventHandler
     public void PlayerJoin(PlayerJoinEvent event){
         Player player = event.getPlayer();

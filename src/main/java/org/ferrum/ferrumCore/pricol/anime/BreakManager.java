@@ -1,5 +1,6 @@
 package org.ferrum.ferrumCore.pricol.anime;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -9,13 +10,14 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
 import org.ferrum.ferrumCore.FerrumCore;
+import org.ferrum.ferrumCore.utils.Scheduler;
 
 import java.util.*;
 
 public class BreakManager {
 
     private static final Map<BlockPos, SavedBlock> memory = new HashMap<>();
-    private static BukkitTask task;
+    private static Scheduler.Task task;
 
     public static void logBlock(Block block, int ticks) {
         BlockPos pos = BlockPos.of(block);
@@ -38,7 +40,7 @@ public class BreakManager {
     }
 
     private static void startTask() {
-        task = Bukkit.getScheduler().runTaskTimer(FerrumCore.plugin, BreakManager::tick, 1L, 1L);
+        task = Scheduler.runTimer(BreakManager::tick, 1L, 1L);
     }
 
     private static void stopTask() {

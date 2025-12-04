@@ -124,10 +124,6 @@ public class ChatUtil {
         return builder.build();
     }
 
-    private static Component parseAmpersandColors(String input) {
-        return LegacyComponentSerializer.legacyAmpersand().deserialize(input);
-    }
-
     public static String joinMessage(String[] strings){
         return String.join(" ", Arrays.copyOfRange(strings, 1, strings.length));
     }

@@ -24,12 +24,13 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.RayTraceResult;
 import org.ferrum.ferrumCore.FerrumCore;
+import org.ferrum.ferrumCore.utils.FerrumListener;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
 import java.util.UUID;
 
-public class BatCarManager implements Listener, CommandExecutor {
+public class BatCarManager extends FerrumListener implements CommandExecutor {
 
     private static HashSet<HappyGhast> cars = new HashSet<>();
 
@@ -37,7 +38,7 @@ public class BatCarManager implements Listener, CommandExecutor {
 
         HappyGhast ghast = spawnLocation.getWorld().spawn(spawnLocation, HappyGhast.class, CreatureSpawnEvent.SpawnReason.COMMAND);
 
-        ghast.getAttribute(Attribute.FLYING_SPEED).setBaseValue(0.8f);
+        ghast.getAttribute(Attribute.FLYING_SPEED).setBaseValue(0.6f);
         ghast.getAttribute(Attribute.SCALE).setBaseValue(0.3f);
         ghast.setAI(false);
         ghast.getEquipment().setItem(EquipmentSlot.BODY, new ItemStack( Material.LIGHT_BLUE_HARNESS));
@@ -55,11 +56,12 @@ public class BatCarManager implements Listener, CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String @NotNull [] args) {
         if (commandSender instanceof Player player) {
-            Location location = raycast(player, 6);
+            Location location = raycast(player, 7);
             if (location != null) {
                 commandSender.sendMessage(Component.text("создан бет бэтмобиль ").append(Component.text("id").clickEvent(ClickEvent.copyToClipboard(spawnBatCar(location)))));
             } else {
                 commandSender.sendMessage("нету блока для спавна");
+                commandSender.sendMessage(Component.text("создан бет бэтмобиль ").append(Component.text("id").clickEvent(ClickEvent.copyToClipboard(spawnBatCar(player.getLocation())))));
             }
 
         }
@@ -70,7 +72,7 @@ public class BatCarManager implements Listener, CommandExecutor {
         for (HappyGhast ghast : cars) {
 
             ghast.teleport(new Location(Bukkit.getWorlds().getFirst(), 0, -300, 0));
-            ghast.setHealth(0);
+            ghast.setHealth(0d);
         }
     }
 

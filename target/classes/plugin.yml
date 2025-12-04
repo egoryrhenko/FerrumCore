@@ -2,6 +2,7 @@ name: FerrumCore
 version: '3.0'
 main: org.ferrum.ferrumCore.FerrumCore
 api-version: '1.21'
+folia-supported: true
 softdepend:
   - LuckPerms
   - PlaceholderAPI
@@ -48,25 +49,29 @@ commands:
       - scale
       - s
   suffix:
-    description: команда
+    description: команда для выбора активного суффикса
   back:
-    description: нету
+    description: нету такой команды
   spy:
-    description: ne
+    description: команда для чтение локального чата игроков и личных сообщений
   move_acc:
-    description: da_da
+    description: команда для переноса данных на другой ник
   delete_acc:
-    description: da_da
+    description: команда для удаления данных игрока
   vote:
-    description: da_da_da
+    description: команда для голосований
   rollback:
-    description: da_da_da_da
-  tpworld:
-    description: net
+    description: не рабочая команда
+  world:
+    description: команда для созданий или телепортаций по мирам
   portal:
     description: уникальная фишка с порталами Доктора Стрэнджа
   charge:
     description: уникальная фишка спиженая с магички
+  infinity_void:
+    description: по прежнему уникальная спиженая фишка с магички
+    aliases:
+      - iv
   limit:
     description: да
   lastseen:
@@ -77,8 +82,14 @@ commands:
     description: da_da
   batcar:
     description: da_da
-  fly:
+  freeze:
     description: da
+  cpi:
+    description: da
+  create-food-item:
+    description: сас
+    aliases:
+      - cfi
 
 permissions:
   ferrum.restriction:
