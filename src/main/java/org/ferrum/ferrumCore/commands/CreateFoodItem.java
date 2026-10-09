@@ -1,28 +1,34 @@
 package org.ferrum.ferrumCore.commands;
 
+import io.papermc.paper.datacomponent.DataComponentType;
+import io.papermc.paper.datacomponent.DataComponentTypes;
+import io.papermc.paper.datacomponent.item.Consumable;
 import io.papermc.paper.datacomponent.item.FoodProperties;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+import net.luckperms.api.model.data.DataType;
 import net.md_5.bungee.api.ChatColor;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.components.FoodComponent;
 import org.bukkit.inventory.meta.components.UseCooldownComponent;
 import org.ferrum.ferrumCore.utils.FerrumCommand;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CreateFoodItem extends FerrumCommand {
 
     public CreateFoodItem() {
-        super("create-food-item");
+        super("add-food-properties",true);
+        setDescription("Делает предмет съедобным");
+        setAliases(List.of("afp", "fp","edible"));
     }
 
     @Override
@@ -33,45 +39,32 @@ public class CreateFoodItem extends FerrumCommand {
             return true;
         }
 
-        if (args.length < 2) {
-            player.sendMessage("Использование: /create-food-item <nutrition> <saturation>");
-            return true;
-        }
-
         ItemStack item = player.getInventory().getItemInMainHand();
         if (item.getType() == Material.AIR) {
-            player.sendMessage("Возьмите предмет в руку");
+            player.sendRichMessage("<red>Возьмите предмет в руку");
             return true;
         }
 
-        int nutrition;
-        float saturation;
-
-        try {
-            nutrition = Integer.parseInt(args[0]);
-            saturation = Float.parseFloat(args[1]);
-        } catch (NumberFormatException e) {
-            player.sendMessage("Числа введены неправильно!");
+        if (item.hasData(DataComponentTypes.CONSUMABLE)) {
+            player.sendRichMessage("<red>Предмет у вас в руке уже съедобен");
             return true;
         }
 
-        ItemMeta im = item.getItemMeta();
-        im.setUseRemainder(null);
-        UseCooldownComponent cooldown = im.getUseCooldown();
-        cooldown.setCooldownSeconds(1.0f);
-        im.setUseCooldown(cooldown);
-        FoodComponent foodComponent = im.getFood();
-        foodComponent.setCanAlwaysEat(true);
-        foodComponent.setNutrition(4);
-        foodComponent.setSaturation(1.0f);
-        im.setFood(foodComponent);
-        im.setDisplayName(ChatColor.WHITE + "Elixir of Life");
-        im.setLore(List.of("Use to trigger a", "Time Lord regeneration"));
-        item.setItemMeta(im);
-
+        item.setData(DataComponentTypes.CONSUMABLE, Consumable.consumable().build());
+        item.setData(
+                DataComponentTypes.FOOD, FoodProperties.food()
+                .nutrition(0)
+                .saturation(0f)
+                .canAlwaysEat(true)
+        );
+        ItemMeta meta = item.getItemMeta();
+        List<Component> lore = meta.hasLore() ? meta.lore() : new ArrayList<>();
+        lore.add(Component.text("Съедобный", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false));
+        meta.lore(lore);
+        item.setItemMeta(meta);
         player.getInventory().setItem(EquipmentSlot.HAND, item);
 
-        player.sendMessage("✔ Предмет стал съедобным! (+" + nutrition + " еды, насыщение " + saturation + ")");
+        player.sendRichMessage("<green>Предмет в руке стал съедобным");
         return true;
     }
 

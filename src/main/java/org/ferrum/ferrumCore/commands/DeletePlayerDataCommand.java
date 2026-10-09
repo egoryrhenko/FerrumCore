@@ -30,13 +30,15 @@ public class DeletePlayerDataCommand implements CommandExecutor {
         }
 
         File playerData = new File(Bukkit.getWorlds().getFirst().getWorldFolder(), "playerdata/" + player.getUniqueId() + ".dat");
-        File playerDataBackup = new File(FerrumCore.plugin.getDataFolder(), "backup/delete/playerdata/" + player.getUniqueId() + ".dat");
+        File playerDataBackup = new File(FerrumCore.plugin.getDataFolder(), "backup/delete/playerdata/" + player.getName() + "/" + player.getUniqueId() + ".dat");
 
         File playerStats = new File(Bukkit.getWorlds().getFirst().getWorldFolder(), "stats/" + player.getUniqueId() + ".json");
-        File playerStatsBackup = new File(FerrumCore.plugin.getDataFolder(), "backup/delete/stats/" + player.getUniqueId() + ".json");
+        File playerStatsBackup = new File(FerrumCore.plugin.getDataFolder(), "backup/delete/stats/" + player.getName() + "/" + player.getUniqueId() + ".json");
 
         File playerAdvancement = new File(Bukkit.getWorlds().getFirst().getWorldFolder(), "advancements/" + player.getUniqueId() + ".json");
-        File playerAdvancementBackup = new File(FerrumCore.plugin.getDataFolder(), "backup/delete/advancements/" + player.getUniqueId() + ".json");
+        File playerAdvancementBackup = new File(FerrumCore.plugin.getDataFolder(), "backup/delete/advancements/" + player.getName() + "/" + player.getUniqueId() + ".json");
+
+        File playerDataOld = new File(Bukkit.getWorlds().getFirst().getWorldFolder(), "playerdata/" + player.getUniqueId() + ".dat_old");
 
         try {
 
@@ -51,6 +53,7 @@ public class DeletePlayerDataCommand implements CommandExecutor {
             Files.delete(playerData.toPath());
             Files.delete(playerStats.toPath());
             Files.delete(playerAdvancement.toPath());
+            Files.delete(playerDataOld.toPath());
 
             sender.sendMessage("Определенный успех");
 

@@ -1,5 +1,7 @@
 package org.ferrum.ferrumCore.moder.commands;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
 import net.luckperms.api.model.user.User;
@@ -8,6 +10,7 @@ import net.luckperms.api.node.Node;
 import net.luckperms.api.node.NodeType;
 import net.luckperms.api.node.types.PermissionNode;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.*;
 import org.ferrum.ferrumCore.utils.TabCompleterUtil;
 import org.ferrum.ferrumCore.utils.TimeUtils;
@@ -16,11 +19,12 @@ import org.jetbrains.annotations.Nullable;
 
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 public class RestrictionsManagerCommand implements CommandExecutor, TabCompleter {
 
     private final Map<String, String> keys = new HashMap<>();
-    private final LuckPerms luckPerms = LuckPermsProvider.get();
     private final UserManager manager;
 
     public RestrictionsManagerCommand() {
@@ -34,6 +38,31 @@ public class RestrictionsManagerCommand implements CommandExecutor, TabCompleter
         keys.put("allow-summon-danger", " ferrum.promotion.summon");
 
         manager = LuckPermsProvider.get().getUserManager();
+    }
+
+    public void withUser(
+            String playerName,
+            CommandSender sender,
+            Consumer<User> action
+    ) {
+        OfflinePlayer offline = Bukkit.getOfflinePlayer(playerName);
+        if (!offline.hasPlayedBefore()) {
+            sender.sendMessage(Component.text("Игрок " + playerName + " не найден.", NamedTextColor.RED));
+            return;
+        }
+        UUID uuid = offline.getUniqueId();
+        CompletableFuture<User> future = manager.isLoaded(uuid)
+                        ? CompletableFuture.completedFuture(manager.getUser(uuid))
+                        : manager.loadUser(uuid);
+        future.thenAccept(user -> {
+            if (user == null) {
+                sender.sendMessage(Component.text("Не удалось загрузить данные игрока " + playerName, NamedTextColor.RED));
+                return;
+            }
+
+            action.accept(user);
+            manager.saveUser(user);
+        });
     }
 
     @Override
@@ -54,79 +83,18 @@ public class RestrictionsManagerCommand implements CommandExecutor, TabCompleter
             return true;
         }
 
+        withUser(playerName, sender, user -> {
 
-        User user = manager.getUser(playerName);
+            String permission = keys.get(key);
 
-        if (user == null) {
-            sender.sendMessage("§cИгрок " + playerName + " не найден.");
-            return true;
-        }
-
-        String permission = keys.get(key);
-
-        switch (action) {
-            case "add" -> {
-                if (args.length < 4) {
-                    sender.sendMessage("§cИспользование: /" + label + " <игрок> add <ключ> <время>");
-                    return true;
-                }
-                Duration expiry = TimeUtils.parseTime(args[3]);
-
-                if (expiry.isNegative()) {
-                    sender.sendMessage("Негатив время ноу ноу ноу");
-                    return true;
-                }
-
-                if (expiry.toDays() > 30) {
-                    sender.sendMessage("Максимальный допустимый строк 30d");
-                    return true;
-                }
-
-                Node node = PermissionNode.builder(permission)
-                            .value(true)
-                            .expiry(expiry)
-                            .build();
-
-                user.data().add(node);
-                manager.saveUser(user);
-
-                sender.sendMessage("§aВыдано " + permission + " игроку " + playerName + " на "+ TimeUtils.formatTime(expiry));
-            }
-
-            case "remove" -> {
-                Node node = user.getNodes(NodeType.PERMISSION).stream().filter(p -> p.getPermission().equals(permission)).findFirst().orElse(null);
-                if (node == null) {
-                    sender.sendMessage("Не найдено " + permission + " у " + playerName);
-                    return true;
-                }
-                user.data().remove(node);
-                luckPerms.getUserManager().saveUser(user);
-                sender.sendMessage("§aУдалено разрешение " + permission + " у " + playerName);
-            }
-
-            case "check" -> {
-                boolean hasPerm = user.getCachedData().getPermissionData().checkPermission(permission).asBoolean();
-                if (!hasPerm) {
-                    sender.sendMessage("§eУ игрока " + playerName + " нет " + permission);
-                    return true;
-                }
-
-                // Проверяем, есть ли срок
-                Optional<Node> found = user.getNodes().stream()
-                        .filter(n -> n.getKey().equals(permission) && n instanceof PermissionNode)
-                        .findFirst();
-
-                if (found.isPresent() && found.get().hasExpiry()) {
-                    Duration remaining = found.get().getExpiryDuration();
-                    sender.sendMessage("§aУ " + playerName + " установлено " + permission +
-                            " на " + TimeUtils.formatTime(remaining));
-                } else {
-                    sender.sendMessage("§aУ игрока " + playerName + " есть " + permission + " без срока.");
-                }
-            }
-
+            switch (action) {
+                case "add" -> handleAdd(sender, user, permission, args, label, playerName);
+                case "remove" -> handleRemove(sender, user, permission, playerName);
+                case "check" -> handleCheck(sender, user, permission, playerName);
                 default -> sender.sendMessage("§cНеизвестное действие: " + action);
-        }
+            }
+
+        });
 
         return true;
     }
@@ -149,6 +117,72 @@ public class RestrictionsManagerCommand implements CommandExecutor, TabCompleter
             default -> {
                 return List.of();
             }
+        }
+    }
+
+    private void handleAdd(CommandSender sender, User user, String permission,
+                           String[] args, String label, String playerName) {
+
+        if (args.length < 4) {
+            sender.sendMessage("§cИспользование: /" + label + " <игрок> add <ключ> <время>");
+            return;
+        }
+
+        Duration expiry = TimeUtils.parseTime(args[3]);
+
+        if (expiry.isNegative()) {
+            sender.sendMessage("§cВремя не может быть отрицательным");
+            return;
+        }
+
+        if (expiry.toDays() > 30) {
+            sender.sendMessage("§cМаксимальный срок — 30d");
+            return;
+        }
+
+        Node node = PermissionNode.builder(permission)
+                .value(true)
+                .expiry(expiry)
+                .build();
+
+        user.data().add(node);
+
+        sender.sendMessage("§aВыдано " + permission + " игроку " + playerName +
+                " на " + TimeUtils.formatTime(expiry));
+    }
+
+    private void handleRemove(CommandSender sender, User user, String permission, String playerName) {
+        Optional<PermissionNode> node = user.getNodes(NodeType.PERMISSION).stream()
+                .filter(p -> p.getKey().equals(permission))
+                .findFirst();
+
+        if (node.isEmpty()) {
+            sender.sendMessage("§cУ игрока нет " + permission);
+            return;
+        }
+
+        user.data().remove(node.get());
+        sender.sendMessage("§aУдалено " + permission + " у " + playerName);
+    }
+
+    private void handleCheck(CommandSender sender, User user, String permission, String playerName) {
+        boolean hasPerm = user.getCachedData().getPermissionData()
+                .checkPermission(permission).asBoolean();
+
+        if (!hasPerm) {
+            sender.sendMessage("§eУ игрока " + playerName + " нет " + permission);
+            return;
+        }
+
+        Optional<PermissionNode> found = user.getNodes(NodeType.PERMISSION).stream()
+                .filter(n -> n.getKey().equals(permission))
+                .findFirst();
+
+        if (found.isPresent() && found.get().hasExpiry()) {
+            sender.sendMessage("§aУ " + playerName + " есть " + permission +
+                    " ещё " + TimeUtils.formatTime(found.get().getExpiryDuration()));
+        } else {
+            sender.sendMessage("§aУ " + playerName + " есть " + permission + " без срока");
         }
     }
 }

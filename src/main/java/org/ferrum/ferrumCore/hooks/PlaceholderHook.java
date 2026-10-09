@@ -3,7 +3,9 @@ package org.ferrum.ferrumCore.hooks;
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Statistic;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.SpawnCategory;
 import org.bukkit.event.EventHandler;
@@ -11,8 +13,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.ferrum.ferrumCore.FerrumCore;
 import org.ferrum.ferrumCore.managers.save.SuffixData;
+import org.ferrum.ferrumCore.utils.Scheduler;
 import org.jetbrains.annotations.NotNull;
 
+import java.rmi.registry.LocateRegistry;
 import java.util.Collections;
 import java.util.HashMap;
 
@@ -31,23 +35,28 @@ public class PlaceholderHook extends PlaceholderExpansion implements Listener {
     }
 
     @Override
+    public boolean persist() {
+        return true;
+    }
+
+    @Override
     public @NotNull String getVersion() {
         return "3.0";
     }
     @Override
-    public String onPlaceholderRequest(Player player, String identifier) {
+    public String onPlaceholderRequest(Player player, @NotNull String identifier) {
         if (player == null) {
             return "";
         }
         switch (identifier) {
             case "tps":
-                float tps = Math.round(Bukkit.getTPS()[0]);
-                if (tps > 15.5f){
-                    return "#81be82"+tps;
+                int tps = (int) Math.round(Scheduler.isFolia() ? (float) (Bukkit.getRegionTPS(player.getLocation())[0]) : Bukkit.getTPS()[0]);
+                if (tps > 15){
+                    return "#81be82"+tps+".0";
                 } else if (tps > 13) {
-                    return "#FFDC80"+tps;
+                    return "#FFDC80"+tps+".0";
                 } else {
-                    return "#FF4D4D"+tps;
+                    return "#FF4D4D"+tps+".0";
                 }
             case "ping":
                 int ping = player.getPing();

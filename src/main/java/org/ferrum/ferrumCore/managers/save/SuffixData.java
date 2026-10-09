@@ -2,6 +2,7 @@ package org.ferrum.ferrumCore.managers.save;
 
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.ferrum.ferrumCore.FerrumCore;
@@ -13,9 +14,19 @@ public class SuffixData extends Data {
     private static final HashMap<String, String> suffixByName = new HashMap<>();
 
 
+    public static boolean getFilter(String name) {
+        return getData(SuffixData.class).getInt( "Selected-filter." + name,0) == 1;
+    }
+
+    public static void setFilter(String name, boolean value) {
+        getData(SuffixData.class).set( "Selected-filter." + name, value ? 1 : 0);
+        saveFile(SuffixData.class);
+    }
+
+
     public static void set(OfflinePlayer player, String suffix) {
          suffixByName.put(player.getName(), suffix);
-         getData(SuffixData.class).set(player.getName(), suffix);
+         getData(SuffixData.class).set("Selected-suffix." + player.getName(), suffix);
          saveFile(SuffixData.class);
     }
 
@@ -38,7 +49,7 @@ public class SuffixData extends Data {
 
     public static void remove(OfflinePlayer player) {
         suffixByName.remove(player.getName());
-        getData(SuffixData.class).set(player.getName(), null);
+        getData(SuffixData.class).set("Selected-suffix." + player.getName(), null);
         saveFile(SuffixData.class);
     }
 
@@ -46,7 +57,7 @@ public class SuffixData extends Data {
     public SuffixData(String filename) {
         super(filename);
         try {
-            FileConfiguration data = getData(SuffixData.class);
+            ConfigurationSection data = getData(SuffixData.class).getConfigurationSection("Selected-suffix");
 
             for (String key : data.getKeys(false)) {
                 suffixByName.put(key, data.getString(key));

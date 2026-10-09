@@ -31,12 +31,12 @@ public class KnockListener extends FerrumListener {
 
         switch (block.getType()) {
             case OAK_DOOR, OAK_TRAPDOOR, JUNGLE_DOOR, JUNGLE_TRAPDOOR, ACACIA_DOOR, ACACIA_TRAPDOOR, CHERRY_DOOR, CHERRY_TRAPDOOR, BAMBOO_DOOR, BAMBOO_TRAPDOOR -> {
-                block.getWorld().playSound(block.getLocation(), Sound.ITEM_SHIELD_BLOCK, SoundCategory.BLOCKS, 0.8f, 0.7f);
+                block.getWorld().playSound(block.getLocation(), Sound.ITEM_SHIELD_BLOCK, SoundCategory.BLOCKS, 0.6f, 0.7f);
             }
 
             // 🔳 Деревянные двери без дырки (сплошные)
             case SPRUCE_DOOR, SPRUCE_TRAPDOOR, BIRCH_DOOR, BIRCH_TRAPDOOR, DARK_OAK_DOOR,DARK_OAK_TRAPDOOR, MANGROVE_DOOR, MANGROVE_TRAPDOOR, PALE_OAK_DOOR, PALE_OAK_TRAPDOOR, CRIMSON_DOOR, CRIMSON_TRAPDOOR, WARPED_DOOR, WARPED_TRAPDOOR -> {
-                block.getWorld().playSound(block.getLocation(), Sound.ITEM_SHIELD_BLOCK, SoundCategory.BLOCKS, 0.8f, 0.3f);
+                block.getWorld().playSound(block.getLocation(), Sound.ITEM_SHIELD_BLOCK, SoundCategory.BLOCKS, 0.6f, 0.3f);
             }
 
             // 🪙 Железные двери
@@ -46,7 +46,7 @@ public class KnockListener extends FerrumListener {
                  IRON_TRAPDOOR, COPPER_TRAPDOOR, EXPOSED_COPPER_TRAPDOOR, WEATHERED_COPPER_TRAPDOOR,
                  OXIDIZED_COPPER_TRAPDOOR, WAXED_COPPER_TRAPDOOR, WAXED_EXPOSED_COPPER_TRAPDOOR,
                  WAXED_WEATHERED_COPPER_TRAPDOOR, WAXED_OXIDIZED_COPPER_TRAPDOOR -> {
-                block.getWorld().playSound(block.getLocation(), Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, SoundCategory.BLOCKS, 0.8f, 0.0f);
+                block.getWorld().playSound(block.getLocation(), Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, SoundCategory.BLOCKS, 0.6f, 0.0f);
             }
         }
     }

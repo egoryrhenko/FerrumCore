@@ -9,12 +9,14 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.ferrum.ferrumCore.FerrumCore;
 import org.ferrum.ferrumCore.utils.FerrumCommand;
+import org.ferrum.ferrumCore.utils.TabCompleterUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
 public class FreezeCommand extends FerrumCommand {
+
     public FreezeCommand() {
         super("freeze");
     }
@@ -54,7 +56,14 @@ public class FreezeCommand extends FerrumCommand {
     }
 
     @Override
-    public @NotNull List<String> tabComplete(@NotNull CommandSender commandSender, @NotNull String s, @NotNull String @NotNull [] strings) {
+    public @Nullable List<String> tabComplete(
+            @NotNull CommandSender sender,
+            @NotNull String alias,
+            @NotNull String @NotNull [] args
+    ) {
+        if (args.length == 1) {
+            return TabCompleterUtil.onlineTabCompleter(args[0]);
+        }
         return List.of();
     }
 }

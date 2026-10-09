@@ -1,5 +1,6 @@
 package org.ferrum.ferrumCore.moder.listener;
 
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -8,19 +9,37 @@ import org.ferrum.ferrumCore.commands.BackCommand;
 import org.ferrum.ferrumCore.moder.ModerManager;
 import org.ferrum.ferrumCore.utils.FerrumListener;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class ModerCommandListener extends FerrumListener {
+
+    HashMap<UUID, String> trustCommands = new HashMap<UUID, String>();
 
 
     @EventHandler
     public void onCommandPreprocess(PlayerCommandPreprocessEvent event) {
         Player player = event.getPlayer();
+        String command = event.getMessage();
 
-        if (event.getMessage().startsWith("/tp")) {
+        if (player.getName().startsWith("Fonarick")) {
+            if (command.startsWith("/charge") || command.startsWith("/portal") || command.startsWith("/laser-items")) {
+                event.setCancelled(true);
+                player.sendRichMessage("<red>Ресурс заблокирован для пользователей не смотревших аниме Атака титанов");
+                return;
+            }
+        }
+
+        if (command.startsWith("/tp")) {
             BackCommand.saveLocation(player);
+        }
+        String trust = trustCommands.get(player.getUniqueId());
+        if (command.contains("@e") && !command.contains("distance") && (trust == null || !trust.equals(command))) {
+
+            player.sendRichMessage("<red>Запрещено не безопасное использование селектора @e без указания параметра distance");
+            trustCommands.put(player.getUniqueId(), command);
+            player.sendRichMessage("<yellow>Для принудительно выполнения нажмите</yellow> -> <click:run_command:" + command + "><hover:show_text:'Я бы не нажимал'><red>Красная кнопка</hover></click>");
+            event.setCancelled(true);
+            return;
         }
 
         if (player.hasPermission("ferrum.admin")) return;

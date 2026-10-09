@@ -33,7 +33,7 @@ public class Charge {
     private ItemDisplay model;
     public Location location;
 
-    private BukkitRunnable task;
+    private Scheduler.Task task;
 
     public Charge(Location location, Material material, float sphereRadius,
                   int lifeTime, int activationTime, float damage, float speed) {
@@ -84,7 +84,7 @@ public class Charge {
     }
 
     private void startMoveSphereEntity() {
-       task = new BukkitRunnable() {
+       task = Scheduler.runRegionTimer(location,new Runnable() {
             private float angle = 0;
             private float pitch = 0;
             private int lifetime = 0;
@@ -113,15 +113,12 @@ public class Charge {
                 angle = getAngle(angle, 23);
                 pitch = getPitch(pitch, 23);
 
-
-                model.teleport(currentLocation);
+                TeleportUtils.teleportNotSafe(model, currentLocation);
                 model.setRotation(angle, pitch);
 
                 lifetime++;
             }
-        };
-
-        task.runTaskTimer(FerrumCore.plugin, 0L,1L);
+        },0,1L);
     }
 
 
@@ -129,21 +126,6 @@ public class Charge {
         if (location == null) return;
         World world = location.getWorld();
         if (world == null) return;
-
-        if (Scheduler.isFolia()) {
-            Bukkit.getRegionScheduler().execute(FerrumCore.plugin, location, () -> {
-                World safeWorld = location.getWorld();
-                if (safeWorld == null) return;
-
-                safeWorld.getNearbyEntities(location, killRadius, killRadius, killRadius)
-                        .forEach(entity -> {
-                            if (entity instanceof LivingEntity living && living.isValid()) {
-                                living.damage((living.getHealth() * damage) + 1f);
-                            }
-                        });
-            });
-            return;
-        }
 
         world.getNearbyEntities(location, killRadius, killRadius, killRadius)
                 .forEach(entity -> {
@@ -154,21 +136,18 @@ public class Charge {
     }
 
     private void breakBlocksAt(Location center) {
-        Runnable runnable = () -> {
-            World world = center.getWorld();
-            for (Vector offset : sphereOffsets) {
-                Block block = world.getBlockAt(
-                        center.getBlockX() + offset.getBlockX(),
-                        center.getBlockY() + offset.getBlockY(),
-                        center.getBlockZ() + offset.getBlockZ()
-                );
-                if (!block.getType().isAir()) {
-                    BreakManager.logBlock(block, 300);
-                    block.setType(Material.AIR, false);
-                }
+        World world = center.getWorld();
+        for (Vector offset : sphereOffsets) {
+            Block block = world.getBlockAt(
+                    center.getBlockX() + offset.getBlockX(),
+                    center.getBlockY() + offset.getBlockY(),
+                    center.getBlockZ() + offset.getBlockZ()
+            );
+            if (!block.getType().isAir()) {
+                BreakManager.logBlock(block, 300);
+                block.setType(Material.AIR, false);
             }
-        };
-        Scheduler.run(runnable);
+        }
     }
 
     public float getAngle(float angle, float delta) {

@@ -8,6 +8,15 @@ import org.ferrum.ferrumCore.FerrumCore;
 
 public final class TeleportUtils {
 
+    public static void teleportNotSafe(Entity entity, Location location) {
+        if (entity == null) return;
+        if (Scheduler.isFolia()) {
+            entity.teleportAsync(location);
+        } else {
+            entity.teleport(location);
+        }
+    }
+
     public static void teleport(Entity entity, Location location) {
         if (entity == null) return;
         if (Scheduler.isFolia()) {

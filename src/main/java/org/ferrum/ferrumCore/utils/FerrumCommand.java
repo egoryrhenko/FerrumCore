@@ -1,21 +1,37 @@
 package org.ferrum.ferrumCore.utils;
 
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabCompleter;
+import org.bukkit.command.*;
+import org.bukkit.plugin.Plugin;
+import org.ferrum.ferrumCore.FerrumCore;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
-import java.util.Set;
 
-public abstract class FerrumCommand extends Command {
+public class FerrumCommand extends Command implements PluginIdentifiableCommand {
 
-
-    protected FerrumCommand(@NotNull String name) {
+    public FerrumCommand(@NotNull String name) {
         super(name);
         setPermission("ferrum.command." + name);
         setDescription("auto generated FerrumCore command");
         setUsage("/" + name + " <???>");
     }
+
+    @Override
+    public boolean execute(@NotNull CommandSender commandSender, @NotNull String s, @NotNull String @NotNull [] strings) {
+        return false;
+    }
+
+    public FerrumCommand(@NotNull String name, Boolean hasPermission) {
+        super(name);
+        if (hasPermission) {
+            setPermission("ferrum.command." + name);
+        }
+        setDescription("auto generated FerrumCore command");
+        setUsage("/" + name + " <???>");
+    }
+
+    @Override
+    public @NotNull Plugin getPlugin() {
+        return FerrumCore.plugin;
+    }
+
 }

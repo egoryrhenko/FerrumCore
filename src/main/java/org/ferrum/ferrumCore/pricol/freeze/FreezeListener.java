@@ -87,7 +87,7 @@ public class FreezeListener implements Listener {
                     pointVelocity.getX(),
                     pointVelocity.getY(),
                     pointVelocity.getZ(),
-                    1f,
+                    0.01f,
                     null,
                     true
             );

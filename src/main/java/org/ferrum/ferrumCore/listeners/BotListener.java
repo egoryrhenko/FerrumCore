@@ -45,9 +45,6 @@ public class BotListener extends FerrumListener {
             event.joinMessage(null);
             player.kick(ChatUtil.formatText("Подозрение на бота"));
             FerrumCore.log("Kicked suspicious player: " + player.getName() + " | New: " + isNew + " | PlayTime: " + playTimeTicks + " ticks");
-            if (joinCount > 30) {
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(),"/banip" + player.getName() + " -s");
-            }
         }
     }
 }

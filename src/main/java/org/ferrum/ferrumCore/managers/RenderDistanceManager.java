@@ -48,6 +48,14 @@ public class RenderDistanceManager extends FerrumListener implements CommandExec
             commandSender.sendMessage("/command <nick> <value>");
             return true;
         }
+        if (args[0].equals("-all")) {
+            int value = Integer.parseInt(args[1]);
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                player.setViewDistance(value);
+            }
+            commandSender.sendMessage("Установлена прорисовка " + value + " чанков всем игрокам");
+            return true;
+        }
         Player player = Bukkit.getPlayer(args[0]);
         if (player == null) {
             commandSender.sendMessage("Кто это?");
@@ -55,6 +63,7 @@ public class RenderDistanceManager extends FerrumListener implements CommandExec
         }
         int value = Integer.parseInt(args[1]);
         player.setViewDistance(value);
+        commandSender.sendMessage("Установлена прорисовка " + value + " чанков игроку " + player.getName());
         return true;
     }
 }

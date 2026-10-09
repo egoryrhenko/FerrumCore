@@ -18,7 +18,7 @@ public class GetHourCommand implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (args.length != 1) {
-            sender.sendMessage("Использование: /playtime <имя игрока>");
+            sender.sendRichMessage("<red>Используйте: /playtime <ник>");
             return true;
         }
 
@@ -28,7 +28,7 @@ public class GetHourCommand implements CommandExecutor, TabCompleter {
         int time = target.getStatistic(Statistic.PLAY_ONE_MINUTE) / 20;
 
         if (time == 0) {
-            sender.sendMessage("Игрок не найден");
+            sender.sendRichMessage("<red>Игрок <white>" + target.getName() + " <red>не найден");
             return true;
         }
 

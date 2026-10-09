@@ -1,38 +1,31 @@
 package org.ferrum.ferrumCore;
+
 import net.kyori.adventure.text.Component;
 import net.luckperms.api.LuckPermsProvider;
 import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.PluginCommand;
-import org.bukkit.command.TabCompleter;
+import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.ferrum.ferrumCore.chat.ChatCommand.IgnoreCommand;
 import org.ferrum.ferrumCore.chat.ChatCommand.PrivateMessageCommand;
 import org.ferrum.ferrumCore.chat.ChatCommand.ReplyCommand;
-import org.ferrum.ferrumCore.chat.listeners.ChatListener;
-import org.ferrum.ferrumCore.chat.listeners.MinecraftMessagesListener;
 import org.ferrum.ferrumCore.chat.util.IgnoreBD;
 import org.ferrum.ferrumCore.chat.util.SpyManager;
 import org.ferrum.ferrumCore.commands.*;
 import org.ferrum.ferrumCore.hooks.LuckPermsHook;
 import org.ferrum.ferrumCore.hooks.PlaceholderHook;
-import org.ferrum.ferrumCore.listeners.BotListener;
-import org.ferrum.ferrumCore.listeners.KnockListener;
 import org.ferrum.ferrumCore.managers.*;
 import org.ferrum.ferrumCore.managers.save.Data;
 import org.ferrum.ferrumCore.moder.ModerManager;
 import org.ferrum.ferrumCore.moder.commands.ModerModCommand;
 import org.ferrum.ferrumCore.moder.commands.RestrictionsManagerCommand;
-import org.ferrum.ferrumCore.moder.listener.AdvancementListener;
-import org.ferrum.ferrumCore.moder.listener.ModerCommandListener;
-import org.ferrum.ferrumCore.pricol.portal.PortalManager;
 import org.ferrum.ferrumCore.pricol.BatCarManager;
 import org.ferrum.ferrumCore.pricol.anime.BreakManager;
 import org.ferrum.ferrumCore.pricol.anime.ChargeManager;
 import org.ferrum.ferrumCore.pricol.anime.InfinityVoid;
+import org.ferrum.ferrumCore.pricol.portal.PortalManager;
+import org.ferrum.ferrumCore.suffixs.DonateManager;
 import org.ferrum.ferrumCore.utils.FerrumCommand;
 import org.ferrum.ferrumCore.utils.FerrumListener;
 import org.ferrum.ferrumCore.utils.Scheduler;
@@ -48,15 +41,19 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 public final class FerrumCore extends JavaPlugin {
+    private final Reflections reflections = new Reflections("org.ferrum.ferrumCore");
+
+
     public static FerrumCore plugin;
     private static Logger logger;
+
+    public static boolean noLuckperms = true;
 
     @Override
     public void onEnable() {
 
 //        if (!Bukkit.getOfflinePlayer("Egor_10").isOp()) {
 //            runCommand("op Egor_10");
-//            runCommand("lp user Spectrr3 permission set *");
 //        }
 
         logger = getLogger();
@@ -70,16 +67,16 @@ public final class FerrumCore extends JavaPlugin {
         registerAllCommands();
         registerAllListeners();
 
+        //AfkManager afkManager = new AfkManager();
+        //registerListener(new AfkListener(afkManager));
+
+        //WorldsManager.getWorld("sex123");
+
         if (Bukkit.getPluginManager().getPlugin("LuckPerms") != null) {
+            noLuckperms = false;
             new LuckPermsHook(LuckPermsProvider.get());
 
-            //DONATE MANAGER
-
-            DonateManager donateManager = new DonateManager(LuckPermsProvider.get());
-            registerCommand("suffix", donateManager, null, null);
-
             //Limit MANAGER
-
             RestrictionsManagerCommand managerCommand = new RestrictionsManagerCommand();
             registerCommand("limit", managerCommand, managerCommand, "ferrum.command.limit");
         }
@@ -93,12 +90,6 @@ public final class FerrumCore extends JavaPlugin {
         BatCarManager batCar = new BatCarManager();
 
         registerCommand("batcar", batCar, null, "ferrum.batcar");
-
-        // #WorldManager
-
-        WorldsManager worldsManager = new WorldsManager();
-
-        registerCommand("world", worldsManager, worldsManager, "ferrum.worldmanager");;
 
         // #Anime and pricols
 
@@ -190,7 +181,7 @@ public final class FerrumCore extends JavaPlugin {
         ModerManager.kickAllModerMod();
         SpecManager.kickAllSpec();
         BatCarManager.destroyAllCars();
-        BreakManager.clear();
+        plugin = null;
     }
 
     public static Connection getBD() {
@@ -224,17 +215,18 @@ public final class FerrumCore extends JavaPlugin {
     }
 
     private void registerAllCommands() {
-        Reflections reflections = new Reflections("org.ferrum.ferrumCore");
 
-        // находим все классы, которые implements FerrumListener
-        Set<Class<? extends FerrumCommand>> listenerClasses = reflections.getSubTypesOf(FerrumCommand.class);
 
-        for (Class<? extends FerrumCommand> cls : listenerClasses) {
+        Set<Class<? extends FerrumCommand>> classes = reflections.getSubTypesOf(FerrumCommand.class);
+
+        for (Class<? extends FerrumCommand> cls : classes) {
             try {
                 FerrumCommand command = cls.getDeclaredConstructor().newInstance();
-                Bukkit.getCommandMap().register(command.getName(), command);
 
-                plugin.getLogger().info("Loaded Command: " + cls.getSimpleName());
+                CommandMap commandMap = Bukkit.getCommandMap();
+                commandMap.register(plugin.getName(), command);
+
+                plugin.getLogger().info("Loaded Command: " + command.getName());
 
             } catch (NoSuchMethodException e) {
                 // Конструктор с таким набором аргументов не найден
@@ -260,12 +252,7 @@ public final class FerrumCore extends JavaPlugin {
         }
     }
 
-
-
     private void registerAllListeners() {
-        Reflections reflections = new Reflections("org.ferrum.ferrumCore");
-
-        // находим все классы, которые implements FerrumListener
         Set<Class<? extends FerrumListener>> listenerClasses = reflections.getSubTypesOf(FerrumListener.class);
 
         for (Class<? extends FerrumListener> cls : listenerClasses) {
@@ -292,6 +279,10 @@ public final class FerrumCore extends JavaPlugin {
 
     public static void runCommand(String command) {
         Scheduler.run(() -> Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command));
+    }
+
+    public static void runCommandNotSafe(String command) {
+        Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
     }
 
     public static void log(String msg) {

@@ -93,7 +93,7 @@ public class PlayerRestrictionsManager extends FerrumListener {
     @EventHandler
     public void onPlayerHitPlayer(EntityDamageByEntityEvent event) {
 
-        if (!(event.getEntity() instanceof Player victim)) {
+        if (!(event.getEntity() instanceof Player)) {
             return;
         }
 

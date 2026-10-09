@@ -12,6 +12,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.HappyGhast;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -25,6 +26,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.RayTraceResult;
 import org.ferrum.ferrumCore.FerrumCore;
 import org.ferrum.ferrumCore.utils.FerrumListener;
+import org.ferrum.ferrumCore.utils.Scheduler;
+import org.ferrum.ferrumCore.utils.TeleportUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
@@ -38,7 +41,7 @@ public class BatCarManager extends FerrumListener implements CommandExecutor {
 
         HappyGhast ghast = spawnLocation.getWorld().spawn(spawnLocation, HappyGhast.class, CreatureSpawnEvent.SpawnReason.COMMAND);
 
-        ghast.getAttribute(Attribute.FLYING_SPEED).setBaseValue(0.6f);
+        ghast.getAttribute(Attribute.FLYING_SPEED).setBaseValue(0.5f);
         ghast.getAttribute(Attribute.SCALE).setBaseValue(0.3f);
         ghast.setAI(false);
         ghast.getEquipment().setItem(EquipmentSlot.BODY, new ItemStack( Material.LIGHT_BLUE_HARNESS));
@@ -70,9 +73,7 @@ public class BatCarManager extends FerrumListener implements CommandExecutor {
 
     public static void destroyAllCars() {
         for (HappyGhast ghast : cars) {
-
-            ghast.teleport(new Location(Bukkit.getWorlds().getFirst(), 0, -300, 0));
-            ghast.setHealth(0d);
+            TeleportUtils.teleport(ghast, new Location(Bukkit.getWorlds().getFirst(), 0, -300, 0));
         }
     }
 

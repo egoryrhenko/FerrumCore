@@ -36,7 +36,6 @@ public class ModDetectorCommand extends FerrumCommand {
         Set<String> mods = ModDetectorListener.playerMods.get(player.getUniqueId());
 
         if (player instanceof Player onlinePlayer) {
-            FerrumCore.log("otest");
             for (String channel : onlinePlayer.getListeningPluginChannels()) {
                 mods.add(channel.split(":")[0]);
             }

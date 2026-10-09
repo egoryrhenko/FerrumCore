@@ -1,95 +1,113 @@
 package org.ferrum.ferrumCore.pricol.anime;
 
-import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.TileState;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitTask;
-import org.ferrum.ferrumCore.FerrumCore;
 import org.ferrum.ferrumCore.utils.Scheduler;
-
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.Objects;
 
-public class BreakManager {
+public final class BreakManager {
 
-    private static final Map<BlockPos, SavedBlock> memory = new HashMap<>();
-    private static Scheduler.Task task;
+    // Карта тик -> список блоков, которые нужно восстановить
+    private static final Map<Long, List<BlockEntry>> schedule = new ConcurrentHashMap<>();
 
-    public static void logBlock(Block block, int ticks) {
-        BlockPos pos = BlockPos.of(block);
-        if (memory.containsKey(pos)) return; // уже есть в памяти
+    // Глобальный тикер
+    private static Scheduler.Task tickerTask = null;
+    private static long currentTick = 0L;
 
-        BlockData data = block.getBlockData();
-        ItemStack[] contents = null;
+    private BreakManager() {}
 
-        if (block.getState() instanceof InventoryHolder holder) {
-            contents = Arrays.copyOf(holder.getInventory().getContents(), holder.getInventory().getSize());
-        }
+    public static void startTicker() {
+        if (tickerTask != null) return;
+        tickerTask = Scheduler.runTimer(BreakManager::tick, 1, 1);
+    }
 
-        int restoreTime = Bukkit.getCurrentTick() + ticks;
-        memory.put(pos, new SavedBlock(data, contents, restoreTime));
-
-        // если таск не работает — запускаем
-        if (task == null) {
-            startTask();
+    public static void stopTicker() {
+        if (tickerTask != null) {
+            tickerTask.cancel();
+            tickerTask = null;
         }
     }
 
-    private static void startTask() {
-        task = Scheduler.runTimer(BreakManager::tick, 1L, 1L);
-    }
-
-    private static void stopTask() {
-        if (task != null) {
-            task.cancel();
-            task = null;
-        }
+    public static void logBlock(Block block, long delayTicks) {
+        long targetTick = currentTick + delayTicks;
+        BlockEntry entry = BlockEntry.capture(block);
+        schedule.compute(targetTick, (t, list) -> {
+            if (list == null) list = new ArrayList<>();
+            list.add(entry);
+            return list;
+        });
+        startTicker();
     }
 
     private static void tick() {
-        long now = Bukkit.getCurrentTick();
-        Iterator<Map.Entry<BlockPos, SavedBlock>> it = memory.entrySet().iterator();
+        currentTick++;
+        List<BlockEntry> toRestore = schedule.remove(currentTick);
+        if (toRestore == null) return;
 
-        while (it.hasNext()) {
-            Map.Entry<BlockPos, SavedBlock> entry = it.next();
-            SavedBlock saved = entry.getValue();
+        for (BlockEntry entry : toRestore) {
+            restore(entry);
+        }
 
-            if (saved.restoreTime <= now) {
-                restoreBlock(entry.getKey(), saved);
-                it.remove();
-            }
-            if (memory.isEmpty()) {
-                stopTask();
-            }
+        // Выключаем тикер, если задач больше нет
+        if (schedule.isEmpty()) stopTicker();
+    }
+
+    private static void restore(BlockEntry e) {
+        Block block = e.pos.world.getBlockAt(e.pos.x, e.pos.y, e.pos.z);
+        block.setBlockData(e.data, false);
+
+        if (e.contents != null && block.getState() instanceof InventoryHolder h) {
+            h.getInventory().setContents(e.contents);
         }
     }
 
-    private static void restoreBlock(BlockPos pos, SavedBlock saved) {
-        if (pos.world == null) return;
+    // === Вспомогательные record-и ===
 
-        Block block = pos.world.getBlockAt(pos.x, pos.y, pos.z);
-        block.setBlockData(saved.data, false);
+    record BlockPos(int x, int y, int z, World world) {
 
-        if (saved.contents != null && block.getState() instanceof InventoryHolder holder) {
-            holder.getInventory().setContents(saved.contents);
-        }
-    }
-
-    private record SavedBlock(BlockData data, ItemStack[] contents, long restoreTime) {}
-
-    private record BlockPos(int x, int y, int z, World world) {
         static BlockPos of(Block b) {
             Location loc = b.getLocation();
             return new BlockPos(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), loc.getWorld());
         }
+
+        Location toLocation() {
+            return new Location(world, x, y, z);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(x, y, z, world == null ? null : world.getUID());
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof BlockPos other)) return false;
+            if (this.x != other.x || this.y != other.y || this.z != other.z) return false;
+            if (this.world == null || other.world == null) return this.world == other.world;
+            return this.world.getUID().equals(other.world.getUID());
+        }
     }
 
-    public static void clear() {
-        stopTask();
-        memory.clear();
+    record BlockEntry(BlockPos pos, BlockData data, ItemStack[] contents) {
+
+        static BlockEntry capture(Block block) {
+            BlockPos pos = BlockPos.of(block);
+            BlockData data = block.getBlockData().clone();
+
+            ItemStack[] contents = null;
+            if (block.getState() instanceof InventoryHolder h) {
+                contents = Arrays.copyOf(h.getInventory().getContents(), h.getInventory().getSize());
+            }
+
+            return new BlockEntry(pos, data, contents);
+        }
     }
 }

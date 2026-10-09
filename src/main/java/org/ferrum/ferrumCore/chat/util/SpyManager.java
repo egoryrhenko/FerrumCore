@@ -12,12 +12,13 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.ferrum.ferrumCore.managers.save.SpyEnableData;
+import org.ferrum.ferrumCore.utils.FerrumListener;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.EventListener;
 import java.util.HashSet;
 
-public class SpyManager implements CommandExecutor, Listener {
+public class SpyManager extends FerrumListener implements CommandExecutor {
     public static HashSet<Player> spyEnable = new HashSet<>();
 
 

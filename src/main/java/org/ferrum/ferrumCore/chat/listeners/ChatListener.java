@@ -28,9 +28,15 @@ public class ChatListener extends FerrumListener {
     @EventHandler
     public void onChat(AsyncChatEvent event) {
         Player player = event.getPlayer();
+
+        if (!player.hasPermission("ferrum.chat.send")) {
+            player.sendRichMessage("<red>У вас нет прав чтобы писать в чат, возможно у вас непривязан аккаунт к дискорду если вы думаете что это ошибка напишите администрации в дискорде <click:run_command:/discord><hover:show_text:'<gray>Нажмите чтоб отправить'><color:#837bf5>/discord</color></hover></click>");
+            event.setCancelled(true);
+            return;
+        }
+
         String message = PlainTextComponentSerializer.plainText().serialize(event.message()).trim();
         HashSet<String> whoIgnored = IgnoreBD.getIgnoredBy(player.getName());
-
 
         if (message.isEmpty()) return;
 
@@ -88,6 +94,8 @@ public class ChatListener extends FerrumListener {
                         .append(ChatUtil.decorateNick(getPlain(displayName)))
                         .append(ChatUtil.formatText((" " + SuffixData.get(source) + " #14c5ff› ").replaceAll("\\s+", " ")))
                         .append(formatMessage(sender, text)));
+
+        DiscordLinkAPI.sendMessage("ModerPlay", "moder-game", sender.getName(), text);
     }
 
     /**

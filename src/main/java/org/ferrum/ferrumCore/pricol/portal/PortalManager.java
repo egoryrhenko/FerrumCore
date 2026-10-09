@@ -107,7 +107,7 @@ public class PortalManager implements CommandExecutor, TabCompleter {
 
         if (frameParticle == null) frameParticle = Particle.FLAME;
 
-        World targetWorld = WorldsManager.getWorld(worldName, World.Environment.NORMAL, WorldType.FLAT);
+        World targetWorld = WorldsManager.getWorld(worldName, "NORMAL", "FLAT");
 
         // ---- Создание порталов ----
         Location fromLocation = getShiftedLocation(player, 5f).add(new Vector(0,1.8f,0));

@@ -48,10 +48,6 @@ commands:
     aliases:
       - scale
       - s
-  suffix:
-    description: команда для выбора активного суффикса
-  back:
-    description: нету такой команды
   spy:
     description: команда для чтение локального чата игроков и личных сообщений
   move_acc:
@@ -62,8 +58,6 @@ commands:
     description: команда для голосований
   rollback:
     description: не рабочая команда
-  world:
-    description: команда для созданий или телепортаций по мирам
   portal:
     description: уникальная фишка с порталами Доктора Стрэнджа
   charge:
@@ -82,14 +76,8 @@ commands:
     description: da_da
   batcar:
     description: da_da
-  freeze:
-    description: da
   cpi:
     description: da
-  create-food-item:
-    description: сас
-    aliases:
-      - cfi
 
 permissions:
   ferrum.restriction:

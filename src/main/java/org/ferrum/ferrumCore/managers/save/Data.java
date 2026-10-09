@@ -11,10 +11,12 @@ import java.util.Map;
 
 public class Data {
 
+
     public static void init() {
         new SuffixData("suffix.yml");
         new RatingData("rating.yml");
         new SpyEnableData("spy.yml");
+        new WorldsData("worlds.yml");
     }
 
     private static final Map<Class<?>, FileConfiguration> dataMap = new HashMap<>();

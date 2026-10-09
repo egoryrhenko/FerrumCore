@@ -2,7 +2,7 @@ package org.ferrum.ferrumCore.chat.util;
 
 import org.bukkit.Material;
 
-public record DonatItem(
+public record Suffix(
         String id,
         String name,
         Material material,

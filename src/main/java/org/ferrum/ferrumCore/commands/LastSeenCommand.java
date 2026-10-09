@@ -1,17 +1,13 @@
 package org.ferrum.ferrumCore.commands;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
-import org.ferrum.ferrumCore.chat.util.ChatUtil;
 import org.ferrum.ferrumCore.utils.TabCompleterUtil;
-import org.ferrum.ferrumCore.managers.DonateManager;
+import org.ferrum.ferrumCore.suffixs.DonateManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,31 +20,27 @@ public class LastSeenCommand implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (args.length != 1) {
-            sender.sendMessage("§cИспользование: /lastseen <ник>");
+            sender.sendRichMessage("<red> Используйте: /lastseen <ник>");
             return true;
         }
 
         OfflinePlayer target = Bukkit.getOfflinePlayer(args[0]);
 
         if (target.isOnline()) {
-            sender.sendMessage("§a" + target.getName() + " сейчас онлайн.");
+            sender.sendRichMessage("<yellow>Игрок <white>" +target.getName() + " <yellow>сейчас онлайн");
             return true;
         }
 
         long lastSeen = target.getLastSeen();
 
         if (lastSeen == 0) {
-            sender.sendMessage(ChatUtil.formatText("&eИгрок &f" + args[0] + "&e никогда не заходил на сервер."));
+            sender.sendRichMessage("<yellow>Игрок <white>" + args[0] + "<yellow> никогда не заходил на сервер");
             return true;
         }
 
         String formatted = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").format(new Date(lastSeen));
-        sender.sendMessage(ChatUtil.formatText( target.getName() + " был в сети: ")
-                .append(
-                        Component.text(formatted)
-                                .hoverEvent(HoverEvent.showText(Component.text(DonateManager.getFormatTime((int) ((System.currentTimeMillis() - lastSeen) / 1000)) + " назад", NamedTextColor.GRAY)))
-                )
-        );
+        String relative = DonateManager.getFormatTime((int) ((System.currentTimeMillis() - lastSeen) / 1000));
+        sender.sendRichMessage("Игрок " + target.getName() + " был в сети <hover:show_text:'" + formatted + "'>" + relative + "</hover> назад");
         return true;
     }
 

@@ -19,82 +19,140 @@ Danger_entity:
   - "TNT_MINECART"
   - "END_CRYSTAL"
 
+SuffixMenu:
+  Shape:
+    - "#########"
+    - "#       #"
+    - "#       #"
+    - "#       #"
+    - "##B#C#N#F"
+  Items:
+    Clear-button:
+      Name: "Убрать суффикс"
+      Material: RED_STAINED_GLASS_PANE
+    Filter-button:
+      Name: "Фильтр"
+      Material: PAINTING
+    Page-button-material: ARROW
+    Back-page-name: "Назад"
+    Next-page-name: "Вперед"
+    Border-material: BLACK_STAINED_GLASS_PANE
+  Start-items: 10
+
+
 
 DonateItems:
   note:
-    Name: "Суффикс &d♬"
-    Content: "#fc21a5♬"
+    Name: "Суффикс <#ff2ef8>♬"
+    Content: "#ff2ef8♬"
     Permission: "suffix.note"
     Material: "NOTE_BLOCK"
 
   skull:
-    Name: "Суффикс &7☠"
-    Content: "#aaaaaa☠"
+    Name: "Суффикс <#d4d4ba>☠"
+    Content: "#d4d4ba☠"
     Permission: "suffix.skeleton_skull"
     Material: "SKELETON_SKULL"
 
   fire:
-    Name: "Суффикс &6🔥"
-    Content: "&6🔥"
+    Name: "Суффикс <#ff9008>🔥"
+    Content: "#ff9008🔥"
     Permission: "suffix.fire"
     Material: "BLAZE_POWDER"
 
   cloud:
-    Name: "Суффикс &7☁"
-    Content: "&7☁"
+    Name: "Суффикс <gray>☁"
+    Content: "#ddcebf☁"
     Permission: "suffix.cloud"
-    Material: "GRAY_DYE"
+    Material: "CLAY_BALL"
 
   heart:
-    Name: "Суффикс &d❤"
-    Content: "#eb7ab2❤"
+    Name: "Суффикс <#f556d0>❤"
+    Content: "#f556d0❤"
     Permission: "suffix.heart"
     Material: "REDSTONE"
 
   trident:
-    Name: "Суффикс &2🔱"
-    Content: "#2ac089🔱"
+    Name: "Суффикс <#2ee8a4>🔱"
+    Content: "#2ee8a4🔱"
     Permission: "suffix.trident"
     Material: "TRIDENT"
-
   meteor:
-    Name: "Суффикс &6☄"
+    Name: "Суффикс <#f58751>☄"
     Content: "#f58751☄"
     Permission: "suffix.meteor"
     Material: "MAGMA_BLOCK"
-
   snowman:
-    Name: "Суффикс &f☃"
-    Content: "#7af4fa☃"
+    Name: "Суффикс <#8cf0f5>☃"
+    Content: "#8cf0f5☃"
     Permission: "suffix.snow_golem"
     Material: "SNOW_BLOCK"
-
   sun:
-    Name: "Суффикс &e☀"
+    Name: "Суффикс <#fcc623>☀"
     Content: "#fcc623☀"
     Permission: "suffix.sun"
     Material: "SUNFLOWER"
-
   moon:
-    Name: "Суффикс &b☽"
+    Name: "Суффикс <#97E5FF>☽"
     Content: "#97E5FF☽"
     Permission: "suffix.moon"
     Material: "END_STONE"
-
   umbrella:
-    Name: "Суффикс &5☔"
+    Name: "Суффикс <#9056f5>☔"
     Content: "#9056f5☔"
     Permission: "suffix.umbrella"
     Material: "BLUE_DYE"
-
   sea:
-    Name: "Суффикс &b🌊"
+    Name: "Суффикс <#738df5>🌊"
     Content: "#738df5🌊"
     Permission: "suffix.see"
     Material: "WATER_BUCKET"
-
   toilet:
-    Name: "Суффикс &f🚽"
-    Content: "🚽"
+    Name: "Суффикс 🚽"
+    Content: "&f🚽"
     Permission: "suffix.toilet"
     Material: "QUARTZ_STAIRS"
+  sand-clock:
+    Name: "Суффикс <#ffb02e>⌛"
+    Content: "#ffb02e⌛"
+    Permission: "suffix.six-seven"
+    Material: "ORANGE_CANDLE"
+  pickaxe:
+    Name: "Суффикс <#2eeeff>⛏"
+    Content: "#2eeeff⛏"
+    Permission: "suffix.pickaxe"
+    Material: "DIAMOND_PICKAXE"
+  sword:
+    Name: "Суффикс <#ff4545>🗡"
+    Content: "#ff4545🗡"
+    Permission: "suffix.sword"
+    Material: "DIAMOND_SWORD"
+  potion:
+    Name: "Суффикс <#3bfffb>🧪"
+    Content: "#3bfffb🧪"
+    Permission: "suffix.potion"
+    Material: "LINGERING_POTION"
+  dice:
+    Name: "Суффикс <#fce9d9>⚂"
+    Content: "#fce9d9⚂"
+    Permission: "suffix.dice"
+    Material: "QUARTZ_BLOCK"
+  snowflake:
+    Name: "Суффикс <#2efffc>❄"
+    Content: "#2efffc❄"
+    Permission: "suffix.snowflake"
+    Material: "SNOWBALL"
+  star:
+    Name: "Суффикс <#ffe72e>⭐"
+    Content: "#ffe72e⭐"
+    Permission: "suffix.star"
+    Material: "NETHER_STAR"
+  figure:
+    Name: "Суффикс ☯"
+    Content: "☯"
+    Permission: "suffix.figure"
+    Material: "FIREWORK_STAR"
+
+
+
+

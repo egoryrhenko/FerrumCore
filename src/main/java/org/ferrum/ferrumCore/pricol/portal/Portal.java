@@ -55,7 +55,7 @@ public class Portal {
     }
 
     private void createPortal() {
-        task = Scheduler.runTimer(new BukkitRunnable() {
+        task = Scheduler.runRegionTimer(position, new Runnable() {
             int ticks = 0;
 
             @Override
@@ -63,17 +63,13 @@ public class Portal {
                 switch (PortalState.forId(state)) {
                     case OPEN -> {
                         renderPortalFrameOpenAnimation(ticks);
-                        if (ticks > activationTime) {
-                            state++;
-                        }
+                        if (ticks > activationTime) state++;
                     }
                     case WORK -> {
                         renderPortalFrame(ticks);
                         renderPortal(ticks);
                         teleportPlayers();
-                        if (ticks > closeTime) {
-                            state++;
-                        }
+                        if (ticks > closeTime) state++;
                     }
                     case CLOSE -> {
                         renderPortalFrame(ticks);
@@ -85,7 +81,7 @@ public class Portal {
                 }
                 ticks++;
             }
-        }, 0,1);
+        }, 0L, 1L);
     }
 
     public void close() {

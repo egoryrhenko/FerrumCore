@@ -58,7 +58,7 @@
                                     <artifactId>${project.artifactId}</artifactId>
                                     <version>${project.version}</version>
                                     <type>jar</type>
-                                    <outputDirectory>C:\Users\Egor\Desktop\Aurion2\plugins</outputDirectory>
+                                    <outputDirectory>C:\Users\User\Desktop\TestServer\plugins</outputDirectory>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
@@ -90,9 +90,9 @@
     </repositories>
     <dependencies>
         <dependency>
-            <groupId>io.papermc.paper</groupId>
-            <artifactId>paper-api</artifactId>
-            <version>1.21.7-R0.1-SNAPSHOT</version>
+            <groupId>dev.folia</groupId>
+            <artifactId>folia-api</artifactId>
+            <version>1.21.11-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

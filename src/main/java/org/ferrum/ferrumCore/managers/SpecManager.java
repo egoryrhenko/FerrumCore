@@ -16,6 +16,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.ferrum.ferrumCore.FerrumCore;
 import org.ferrum.ferrumCore.moder.ModerData;
 import org.ferrum.ferrumCore.utils.FerrumListener;
+import org.ferrum.ferrumCore.utils.Scheduler;
 import org.ferrum.ferrumCore.utils.TeleportUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -30,30 +31,26 @@ public class SpecManager extends FerrumListener implements CommandExecutor {
             commandSender.sendMessage("Данная команда толко для игрока");
             return false;
         }
-
-        if (SpecData.containsKey(player)){
-            disableSpec(player);
-        } else {
-            enableSpec(player);
-
-            if (args.length > 0){
-                Player objekt = Bukkit.getPlayer(args[0]);
-
-                if (objekt==null){
-                    player.sendMessage(args[0]+" Не найден");
-                    return true;
+        Scheduler.run(() -> {
+            if (SpecData.containsKey(player)) {
+                disableSpec(player);
+            } else {
+                enableSpec(player);
+                if (args.length > 0) {
+                    Player target = Bukkit.getPlayer(args[0]);
+                    if (target != null) {
+                        TeleportUtils.teleportNotSafe(player, target.getLocation());
+                    } else {
+                        player.sendMessage(args[0] + " Не найден");
+                    }
                 }
-
-                player.teleport(objekt);
-
             }
-        }
+        });
         return true;
     }
 
-
     public static void enableSpec(Player player) {
-        FerrumCore.runCommand("irp forcebackup player " + player.getName());
+        FerrumCore.runCommandNotSafe("irp forcebackup player " + player.getName());
         SpecData.put(player, new ModerData(player.getLocation(), player.getInventory().getContents()));
         player.getInventory().clear();
         player.setGameMode(GameMode.SPECTATOR);
@@ -65,7 +62,6 @@ public class SpecManager extends FerrumListener implements CommandExecutor {
         TeleportUtils.teleport(player, moderData.location());
         player.getInventory().setContents(moderData.inventory());
         player.setGameMode(GameMode.SURVIVAL);
-
     }
 
     @EventHandler
